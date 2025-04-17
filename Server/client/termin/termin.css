@@ -1,0 +1,33 @@
+
+html{
+    height:100%;
+    overflow: hidden;
+}
+body {
+    height: 100%;
+    background-color: #1B4F72;
+    margin: 0;
+    padding: 0;
+}
+h1{color: white; text-align: center;}
+
+.pagebody{
+    height: 100%;
+    padding: 10px;
+    margin-left: 10%;
+    margin-right: 10%;
+    background-color: #F2A541;
+
+}
+
+.terminzeiten{
+    margin-bottom: 50px;
+    display: flex;
+}
+.datetime{
+    margin-right: 10px;
+}
+
+.eingabe{
+    margin-bottom: 50px;
+}

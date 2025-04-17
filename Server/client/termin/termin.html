@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/termin/termin.css">
+    <title>Terminverwaltung</title>
+</head>
+<body>
+<h1>Phandam</h1>
+    <div class="pagebody">
+
+        <div id="Datum" class="datetime">
+            <span id="date"></span>
+            <br>
+        </div>
+    <div id="Termindaten" class="terminzeiten">
+        <div id="uhrzeitstart" class="datetime">
+            <label>Start</label>
+            <input type="time" id="startuhrzeit" name="fav_language">
+            <br>
+        </div>
+        <div id="uhrzeitende" class="datetime">
+            <label>Ende</label>
+            <input type="time" id="enduhrzeit" name="fav_language">
+            <br>
+        </div>
+    </div>
+    <div id="Eingabe" class="eingabe">
+        <form action="/termin.js">
+        <label>Geschlecht</label>
+        <input type="text" id="geschlecht" name="fav_language">
+        <br>
+        <label>Vorname</label>
+        <input type="text" id="vorname" name="fav_language">
+        <br>
+        <label>Nachname</label>
+        <input type="text" id="nachname" name="fav_language">
+        <br>
+        <label>Geburtsdatum</label>
+        <input type="text" id="geburtsdatum" name="fav_language">
+        <br>
+        <label>Telefon</label>
+        <input type="text" id="telefon" name="fav_language">
+        <br>
+        <label>Mail</label>
+        <input type="text" id="mail" name="fav_language">
+
+        </form>
+    </div>
+    <div id="Button">
+        <button onclick="speichern()">Speichern</button>
+        <button onclick="abbrechen()">Abbrechen</button>
+    </div>
+    </div>
+
+    <script src="/termin/termin.js"></script>
+</body>
+</html>
