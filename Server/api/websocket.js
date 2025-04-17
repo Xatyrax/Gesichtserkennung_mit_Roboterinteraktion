@@ -5,7 +5,8 @@ const clients = new Map();
 const clients_lastmessage = new Map([
     [fixedValues.websocket_smartphoneID,''],
     [fixedValues.websocket_gesichtserkennungID,''],
-    [fixedValues.websocket_spracherkennungID,'']
+    [fixedValues.websocket_spracherkennungID,''],
+    [fixedValues.websocket_RoboterID,'']
 ]);
 
 wss.on('connection', (ws) => {
@@ -41,6 +42,12 @@ wss.on('connection', (ws) => {
             clients.set(fixedValues.websocket_spracherkennungID,ws);
             ws.send('Hallo Spracherkennung');
         }
+        else if(`${message}` == fixedValues.websocket_RoboterID)
+        {
+            //ClientID (für spätere Identifikation des Clients) vergeben
+            clients.set(fixedValues.websocket_RoboterID,ws);
+            ws.send('Hallo Wall-E');
+        }
 
         //const websocket_object = Array.from(clients.entries())[1];
 
@@ -62,6 +69,9 @@ wss.on('connection', (ws) => {
             else if(matchingKeys[0] == fixedValues.websocket_spracherkennungID){
                 clients_lastmessage[fixedValues.websocket_spracherkennungID] = message;
             }
+            else if(matchingKeys[0] == fixedValues.websocket_RoboterID){
+                clients_lastmessage[fixedValues.websocket_RoboterID] = message;
+            }
         }
 
     });
@@ -71,6 +81,7 @@ wss.on('connection', (ws) => {
         const smartphone = clients.get(fixedValues.websocket_smartphoneID);
         const gesichtserkennung = clients.get(fixedValues.websocket_gesichtserkennungID);
         const spracherkennung = clients.get(fixedValues.websocket_spracherkennungID);
+        const roboter = clients.get(fixedValues.websocket_RoboterID);
         if(typeof smartphone !== 'undefined')
         {
             clients.delete(fixedValues.websocket_smartphoneID);
@@ -82,6 +93,10 @@ wss.on('connection', (ws) => {
         if(typeof spracherkennung !== 'undefined')
         {
             clients.delete(fixedValues.websocket_spracherkennungID);
+        }
+        if(typeof roboter !== 'undefined')
+        {
+            clients.delete(fixedValues.websocket_RoboterID);
         }
         console.log('Client Verbindung getrennt');
     });

@@ -2,18 +2,17 @@ import express,{ Request, Response } from 'express';
 import { FileFilterCallback } from 'multer';
 import session from 'express-session';
 import { sql_execute } from './phandam_modules/Utilities';
+import fixedValues from './phandam_modules/config';
 const multer = require('multer');
 const path = require('path');
 const bodyParser = require("body-parser");
 const mysql = require('mysql2');
 import { QueryError } from 'mysql2';
-// import mysql from 'mysql2/promise';
 const db_connection = require('./phandam_modules/dbConnect.js');
-const fixedValues = require('./phandam_modules/fixedValues.js');
-const {Text2Audio,Audio2Text} = require('./phandam_modules/api_formats.js');
 const {wss, sendToClient, getLastMessage} = require('./api/websocket.js');
 const app = express();
 const PORT = 3000;
+//TODO: In config? auslagern???
 const storage_gesicht = multer.diskStorage({
   destination: function (
     req: Request,
@@ -50,11 +49,7 @@ const storage_sprache = multer.diskStorage({
 });
 const upload_sprache = multer({ storage: storage_sprache });
 
-//In Types auslagern
-
-
-//type MyRequest = Request & MySessionData;
-
+//TODO: In Utilities auslagern
 function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -62,6 +57,7 @@ function sleep(ms: number) {
 async function sleepwrap() {
   await sleep(1000);
 }
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'client')));
 app.use(session({secret: "sec",
@@ -96,7 +92,7 @@ app.post('/upload/sprache', upload_sprache.single('myfile'), async (req: Request
   res.send('angekommen');
   console.log(req.file);
   sendToClient(fixedValues.websocket_spracherkennungID,'Bild hochgeladen. Erwarte Nachricht...');
-  for (let i = 0; i < 240; i++) {
+  for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
     try{
       const parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_spracherkennungID));
       if(parsedjson.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
@@ -122,7 +118,7 @@ app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request
   res.send('angekommen');
   console.log(req.file);
   sendToClient(fixedValues.websocket_gesichtserkennungID,'{"Type": "AVALIBLE"}');
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < fixedValues.TimeoutGesichtInSekunden; i++) {
     try{
       let unparsed = getLastMessage(fixedValues.websocket_gesichtserkennungID);
       let parsedjson = unparsed;
@@ -184,8 +180,8 @@ app.get("/api/client", (req: Request, res: Response) => {
 app.post("/api/client", (req: Request, res: Response) => {
   let date = req.body.date;
   let time = req.body.time;
-  console.log(time);
-  console.log(date);
+  // console.log(time);
+  // console.log(date);
   if(time.split(':')[0].length == 1)
     time = '0'+time;
   var datetimestring = "1970-01-01T" + time.padStart(2, "0") +":00";
@@ -206,7 +202,7 @@ app.post("/api/client", (req: Request, res: Response) => {
     if (datetime) {
         req.session.datetime = datetime;
     } else {
-        req.session.datetime = fixedValues.NotUsedVariableString;
+        req.session.datetime = fixedValues.NotUsedVariableDate;
     }
 
     res.redirect("/termin");

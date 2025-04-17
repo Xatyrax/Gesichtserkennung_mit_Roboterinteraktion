@@ -1,3 +1,6 @@
+//Noch für Websockets und ?Calendar(bekommt der das nicht von der Api)? benötigt
+//TODO: auch die ändern
+
 const fixedValues = {
     NotUsedVariableString: '',
     TermindauerInMinuten: 30,

@@ -61,8 +61,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             //alert(`${JSON.parse(data.Termine)}`);
 
             JSON.parse(data.Termine).forEach(termin => {
-                alert(`${JSON.stringify(termin)}`);
-            //     // console.log(termin);
+                //alert(`${JSON.stringify(termin)}`);
             });
 
 
