@@ -9,7 +9,8 @@ const bodyParser = require("body-parser");
 const mysql = require('mysql2');
 import { QueryError } from 'mysql2';
 const db_connection = require('./phandam_modules/dbConnect.js');
-const {wss, sendToClient, getLastMessage} = require('./api/websocket.js');
+// const {wss, sendToClient, getLastMessage} = require('./api/websocket.js');
+import wss, {sendToClient, getLastMessage } from './api/websocket';
 const app = express();
 const PORT = 3000;
 //TODO: In config? auslagern???
@@ -121,8 +122,8 @@ app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request
   for (let i = 0; i < fixedValues.TimeoutGesichtInSekunden; i++) {
     try{
       let unparsed = getLastMessage(fixedValues.websocket_gesichtserkennungID);
-      let parsedjson = unparsed;
-      if(unparsed){
+      let parsedjson = JSON.parse('{}');
+      if(unparsed !== fixedValues.NotUsedVariableString){
         parsedjson = JSON.parse(unparsed);
       }
       //TODO: to Lower
