@@ -1,0 +1,3 @@
+[submodule "smartphone"]
+	path = smartphone
+	url = https://github.com/PhHagel/SmartphoneEntwicklung.git
