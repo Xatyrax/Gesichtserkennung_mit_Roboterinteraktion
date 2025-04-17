@@ -1,3 +1,6 @@
 [submodule "smartphone"]
 	path = smartphone
 	url = https://github.com/PhHagel/SmartphoneEntwicklung.git
+[submodule "speech_recognition"]
+	path = speech_recognition
+	url = https://github.com/AnelD/speech_recognition.git
