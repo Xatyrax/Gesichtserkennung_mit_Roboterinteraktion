@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">0_PHANDAM</string>
+    <string name="action_settings">Settings</string>
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="bild_aufnehmen">Bild aufnehmen</string>
+    <string name="l_schen">Neuer Versuch</string>
+    <string name="akzeptieren">Akzeptieren</string>
+    <string name="imageshow">ImageShow</string>
+    <string name="show_image">Show Image</string>
+    <string name="nehmen_sie_das_handy_nvom_roboter_hoch">Nehmen Sie das Handy\nvom Roboter hoch</string>
+    <string name="patienten_terminal_v1_0">Patienten-Terminal v1.0</string>
+    <string name="dr_cken_sie_bitte_auf_den_knopf_um_sich_zu_identifizieren">Drücken Sie bitte auf den Knopf \"Bild aufnehmen\" um sich zu identifizieren</string>
+    <string name="bitte_heben_sie_das_ger_t_vorsichtig_vom_roboter_hoch">Bitte heben Sie das Gerät vorsichtig vom Roboter hoch</string>
+    <string name="neu">Neu</string>
+    <string name="neuer_patient">Neuer Patient</string>
+    <string name="neuer_termin">Neuer Termin</string>
+    <string name="aufnahme_starten">Aufnahme Starten</string>
+    <string name="aufnahme_stoppen">Aufnahme Stoppen</string>
+    <string name="nachname_n_vorname_n_geschlecht_n_geburtsdatum_n_telefonnummer_n_email">Nachname \n Vorname \n Geschlecht \n Geburtsdatum \n Telefonnummer \n Email</string>
+    <string name="seite_schlie_en">Seite Schließen</string>
+    <string name="klicken_sie_bitte_auf_aufnahme_starten_und_sagen_die_folgenden_daten">Klicken Sie bitte auf Aufnahme starten und sagen die folgenden Daten:</string>
+    <string name="neuer_versuch">Neuer Versuch</string>
+    <string name="tippen_sie_bitte_auf_aufnahme_starten_und_sagen_sie_ja_wenn_sie_den_termin_annehmen_wollen_und_nein_falls_sie_den_termin_nicht_annehmen_wollen">Tippen Sie bitte auf Aufnahme starten und sagen Sie Ja wenn Sie den Termin annehmen wollen, und Nein falls Sie den Termin nicht annehmen wollen und einen anderen Termin bekommen möchten.</string>
+    <string name="bitte_folgen_sie_dem_roboter_und_behalten_sie_das_smartphone_in_der_hand">Bitte folgen Sie dem Roboter und behalten Sie das Smartphone in der Hand.</string>
+    <string name="bitte_legen_sie_das_smartphone_vorsichtig_auf_den_roboter_zur_ck">Bitte legen Sie das Smartphone vorsichtig auf den Roboter zurück</string>
+    <string name="bitte_folgen_sie_dem_roboter">Bitte folgen Sie dem Roboter</string>
+</resources>
