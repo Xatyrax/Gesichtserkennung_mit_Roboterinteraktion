@@ -1,0 +1,13 @@
+.venv/
+
+# Ignore the audio files used while testing, but keep base folder structure
+data/*
+!data/in/
+data/in/*
+!data/in/.gitkeep
+!data/out/
+data/out/*
+!data/out/.gitkeep
+!data/generated/
+data/generated/*
+!data/generated/.gitkeep
