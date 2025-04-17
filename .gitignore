@@ -120,3 +120,6 @@ dmypy.json
 
 #Pycharm IDE
 .idea
+
+#Gradle
+.gradle
