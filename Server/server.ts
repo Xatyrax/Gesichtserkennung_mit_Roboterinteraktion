@@ -4,7 +4,7 @@ import session from 'express-session';
 import { sql_execute } from './phandam_modules/db_utils';
 import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
-import {voiceFileUploaded} from './api/websocket_client_actions'
+import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions'
 const multer = require('multer');
 const path = require('path');
 const bodyParser = require("body-parser");
@@ -78,42 +78,12 @@ app.post('/upload/sprache', upload_sprache.single('myfile'), async (req: Request
   res.send('angekommen');
   console.log(req.file);
   voiceFileUploaded();
-
 });
 
 app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request, res: Response) => {
   res.send('angekommen');
   console.log(req.file);
-  sendToClient(fixedValues.websocket_gesichtserkennungID,'{"Type": "AVALIBLE"}');
-  for (let i = 0; i < fixedValues.TimeoutGesichtInSekunden; i++) {
-    try{
-      let unparsed = getLastMessage(fixedValues.websocket_gesichtserkennungID);
-      let parsedjson = JSON.parse('{}');
-      if(unparsed !== fixedValues.NotUsedVariableString){
-        parsedjson = JSON.parse(unparsed);
-      }
-      //TODO: to Lower
-      if(parsedjson.type == 'AVALIBLE_ANSWER')
-      {
-        let Answer = parsedjson.answer;
-        let BildID = parsedjson.bild_id;
-        sendToClient(fixedValues.websocket_gesichtserkennungID,`{"Answer":"${Answer}"; "BildID":"${BildID}"}`);
-        if(Answer == 'TRUE')
-        {
-          //TODO: Appointment abfragen
-          let Appointment = 'FALSE';
-          sendToClient(fixedValues.websocket_smartphoneID,`{"type":"Known_Customer", "Appointment":"${Appointment}"}`);
-        }
-        else if(Answer == 'FALSE')
-        {
-          sendToClient(fixedValues.websocket_smartphoneID,`{"type":"Unknown_Customer"}`);
-        }
-        sendToClient(fixedValues.websocket_smartphoneID,`{"Answer":"Patient vorhanden"; "Patientendaten":"Daten"}`);
-        return;
-      }
-    }catch{}
-    await sleep();
-  }
+  faceFileUploaded();
 });
 
 app.get("/api/calendar", async (req: Request, res: Response) => {
