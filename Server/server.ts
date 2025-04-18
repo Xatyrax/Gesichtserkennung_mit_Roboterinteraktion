@@ -1,8 +1,10 @@
 import express,{ Request, Response } from 'express';
 import { FileFilterCallback } from 'multer';
 import session from 'express-session';
-import { sql_execute } from './phandam_modules/Utilities';
+import { sql_execute } from './phandam_modules/db_utils';
+import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
+import {voiceFileUploaded} from './api/websocket_client_actions'
 const multer = require('multer');
 const path = require('path');
 const bodyParser = require("body-parser");
@@ -10,7 +12,9 @@ const mysql = require('mysql2');
 import { QueryError } from 'mysql2';
 const db_connection = require('./phandam_modules/dbConnect.js');
 // const {wss, sendToClient, getLastMessage} = require('./api/websocket.js');
-import wss, {sendToClient, getLastMessage } from './api/websocket';
+import './api/websocket';
+import {sendToClient, getLastMessage } from './api/websocket_modules';
+
 const app = express();
 const PORT = 3000;
 //TODO: In config? auslagern???
@@ -20,7 +24,7 @@ const storage_gesicht = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
   ) {
-    cb(null, 'uploads/gesicht/');
+    cb(null, fixedValues.gesichtsdateien_speicherort);
   },
   filename: function (
     req: Request,
@@ -38,7 +42,7 @@ const storage_sprache = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, destination: string) => void
   ) {
-    cb(null, 'uploads/sprache/');
+    cb(null, fixedValues.sprachdateien_speicherort);
   },
   filename: function (
     req: Request,
@@ -49,15 +53,6 @@ const storage_sprache = multer.diskStorage({
   }
 });
 const upload_sprache = multer({ storage: storage_sprache });
-
-//TODO: In Utilities auslagern
-function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function sleepwrap() {
-  await sleep(1000);
-}
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'client')));
@@ -79,40 +74,11 @@ app.get('/termin', (req: Request, res: Response) => {
 *   API   * //In API auslagern
 ***********/
 
-// app.post('/upload/gesicht', upload_gesicht.single('myfile'), (req: Request, res: Response) => {
-//   console.log(req.file); // File metadata
-//   sendToClient(fixedValues.websocket_smartphoneID,'Uploaded');
-//   res.send('File uploaded successfully');
-// });
-//
-// app.post('/upload/sprache', upload_sprache.single('myfile'), (req: Request, res: Response) => {
-//   console.log(req.file); // File metadata
-// });
-
 app.post('/upload/sprache', upload_sprache.single('myfile'), async (req: Request, res: Response) => {
   res.send('angekommen');
   console.log(req.file);
-  sendToClient(fixedValues.websocket_spracherkennungID,'Bild hochgeladen. Erwarte Nachricht...');
-  for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
-    try{
-      const parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_spracherkennungID));
-      if(parsedjson.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
-      {
-        let vorname = parsedjson.message.text.firstname;
-        let nachname = parsedjson.message.text.lastname;
-        let Geschlecht = parsedjson.message.text.sex;
-        let Gebrutsdatum = parsedjson.message.text.dateOfBirth;
-        let Tel = parsedjson.message.text.phoneNumber;
-        let email = parsedjson.message.text.emailAddress;
-        let smartphoneresponse = `{"Success": "TRUE", "message": {"firstname": "${vorname}", "lastname": "${nachname}", "sex": "${Geschlecht}", "dateOfBirth": "${Gebrutsdatum}", "phoneNumber": "${Tel}", "emailAddress": "${email}"}}`;
-        sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
-        return;
-      }
-    }catch{}
-    await sleepwrap();
-  }
-  sendToClient(fixedValues.websocket_smartphoneID,'Timeout');
-  sendToClient(fixedValues.websocket_spracherkennungID,'Timeout');
+  voiceFileUploaded();
+
 });
 
 app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request, res: Response) => {
@@ -146,7 +112,7 @@ app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request
         return;
       }
     }catch{}
-    await sleepwrap();
+    await sleep();
   }
 });
 
