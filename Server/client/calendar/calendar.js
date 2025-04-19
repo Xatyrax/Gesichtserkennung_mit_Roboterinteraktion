@@ -19,22 +19,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
 
             // Generate Time Slots (8 AM - 5 PM)
-             //let hours = [];
             let response = await fetch('/api/calendar');
             let data = await response.json();
-             // fetch('/api/calendar')
-             //   .then(response => response.json())
-             //   .then(data => {});
-            //alert(`${data.Termine}`);
 
             let hours = [];
             for (let i = data.OeffnungszeitVon; i <= data.OeffnungszeitBis; i++) {
                 hours.push(i + ":00");
             }
-                //alert(`${hours}`);
-//             });
-//
-// alert(`${hours}`);
+
             // Create the grid
             hours.forEach(hour => {
                 // Time slot column
@@ -58,9 +50,22 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
             });
 
-            //alert(`${JSON.parse(data.Termine)}`);
-
+            //alert(`${data.Termine}`);
             JSON.parse(data.Termine).forEach(termin => {
+
+                let startDate = new Date(termin.start);
+                let dateStr = startDate.toISOString().split("T")[0];
+                let hourStr = startDate.getHours() + ":00";
+
+                let cell = calendarEl.querySelector(`.day[data-date='${dateStr}'][data-time='${hourStr}']`);
+                if (cell) {
+                    let eventEl = document.createElement("div");
+                    eventEl.classList.add("event");
+                    eventEl.textContent = 'Test';
+                    eventEl.setAttribute("id", termin.TerminID);
+                    eventEl.addEventListener("click", TerminBearbeiten);
+                    cell.appendChild(eventEl);
+                }
                 //alert(`${JSON.stringify(termin)}`);
             });
 
@@ -68,52 +73,42 @@ document.addEventListener("DOMContentLoaded", async function () {
             function addEvent(e) {
                 let date = e.target.getAttribute("data-date");
                 let time = e.target.getAttribute("data-time");
-                // alert(time);
-                //
+
                 const form = document.createElement('form');
                 form.method = "POST";
                 form.action = "/api/client";
-                // //
-                // // // alert(time);
-                // //
+
                 const hiddenField = document.createElement('input');
                 hiddenField.type = 'hidden';
                 hiddenField.name = 'date';
                 hiddenField.value = date;
                 form.appendChild(hiddenField);
-                //
-                // // alert(time);
-                //
+
                 const hiddenField2 = document.createElement('input');
                 hiddenField2.type = 'hidden';
                 hiddenField2.name = 'time';
                 hiddenField2.value = time;
                 form.appendChild(hiddenField2);
-                //
-                // // alert(time);
-                //
+
                 document.body.appendChild(form);
                 form.submit();
-
-                // alert(time);
-
-                 //window.location.href = "../termin/termin.html";
-
-                /*window.open("../termin/termin.html", "popup", "width=500,height=400");*/
             }
 
-            /*function addEvent(e) {
-                let date = e.target.getAttribute("data-date");
-                let time = e.target.getAttribute("data-time");
-                let eventText = prompt(`Add an event on ${date} at ${time}:`);
+            function TerminBearbeiten(e) {
+                e.stopPropagation();
+                let id = e.target.getAttribute("id");
 
-                if (eventText) {
-                    let eventDiv = document.createElement("div");
-                    eventDiv.classList.add("event");
-                    eventDiv.textContent = eventText;
-                    e.target.appendChild(eventDiv);
-                }
-            }*/
+                const form = document.createElement('form');
+                form.method = "POST";
+                form.action = "/api/client";
 
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = 'id';
+                hiddenField.value = id;
+                form.appendChild(hiddenField);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
         });
-// });

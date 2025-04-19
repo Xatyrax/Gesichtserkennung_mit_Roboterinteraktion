@@ -46,6 +46,7 @@ const db = require('./phandam_modules/dbConnect.js');
     let createTermineTableQuery = `CREATE TABLE Termine (
             TerminID INT AUTO_INCREMENT PRIMARY KEY,
             start DATETIME NOT NULL,
+            ende DATETIME NOT NULL,
             dauerMinuten INT NOT NULL
         );`;
     db.query(createTermineTableQuery, (err, result) => {
@@ -96,13 +97,13 @@ const db = require('./phandam_modules/dbConnect.js');
         });
 
         let termineData = [
-            ['2025-04-14 10:00', '30'],
-            ['2025-04-15 11:00', '30'],
-            ['2025-04-16 12:00', '30']
+            ['2025-04-18 10:00', '2025-04-18 10:30', '30'],
+            ['2025-04-19 11:00', '2025-04-19 11:30', '30'],
+            ['2025-04-20 12:00', '2025-04-20 12:30', '30']
         ];
 
         let sqlInsertTermine = `INSERT INTO Termine
-            (start, dauerMinuten)
+            (start, ende, dauerMinuten)
             VALUES ?`;
 
         db.query(sqlInsertTermine, [termineData], (err, result) => {

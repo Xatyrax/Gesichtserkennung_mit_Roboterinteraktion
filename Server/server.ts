@@ -91,7 +91,7 @@ app.get("/api/calendar", async (req: Request, res: Response) => {
   let termine;
   try{
   termine = await sql_execute('Select * From Termine');
-  console.log(termine);
+  //console.log(termine);
 
   res.json({ OeffnungszeitVon: fixedValues.OeffnungszeitVon,
     OeffnungszeitBis: fixedValues.OeffnungszeitBis,
@@ -105,44 +105,77 @@ app.get("/api/calendar", async (req: Request, res: Response) => {
 })
 
 app.get("/api/client", (req: Request, res: Response) => {
-  if (req.session.date) {
-        res.json({ date: req.session.date,  time: req.session.time, datetime: req.session.datetime, TermindauerInMinuten: fixedValues.TermindauerInMinuten});
-    } else {
-        //res.json({ date: '' });
-        res.json({ date: fixedValues.NotUsedVariableString });
-    }
-  // res.redirect("/client/termin");
+  if(req.session.eventid)
+  {
+    res.json({ eventid: req.session.eventid});
+  }
+  else
+  {
+    if (req.session.date) {
+          res.json({ date: req.session.date,  time: req.session.time, datetime: req.session.datetime, TermindauerInMinuten: fixedValues.TermindauerInMinuten});
+      } else {
+          res.json({ date: fixedValues.NotUsedVariableString });
+      }
+  }
 })
 
 app.post("/api/client", (req: Request, res: Response) => {
+  //TODO: In Session Definition zu Nummber machen
+  let eventid = req.body.id;
   let date = req.body.date;
   let time = req.body.time;
   // console.log(time);
   // console.log(date);
-  if(time.split(':')[0].length == 1)
-    time = '0'+time;
-  var datetimestring = "1970-01-01T" + time.padStart(2, "0") +":00";
-  var datetime = new Date(datetimestring);
-  if (date) {
-        req.session.date = date;
-    } else {
-      //Todo konstante felder in Datei
-        req.session.date = fixedValues.NotUsedVariableString;
-    }
+  if(eventid)
+  {
+      req.session.eventid = eventid;
+  }
+  else
+  {
+    if(req.session.eventid)
+      req.session.eventid = undefined;
 
-      if (time) {
-        req.session.time = time;
-    } else {
-        req.session.time = fixedValues.NotUsedVariableString;
-    }
+    if(time.split(':')[0].length == 1)
+      time = '0'+time;
+    //TODO: Datum und Uhrzeit in ein Datetime
+    var datetimestring = "1970-01-01T" + time.padStart(2, "0") +":00";
+    var datetime = new Date(datetimestring);
+    if (date) {
+          req.session.date = date;
+      } else {
+        //TODO konstante felder in Datei
+          req.session.date = fixedValues.NotUsedVariableString;
+      }
 
-    if (datetime) {
-        req.session.datetime = datetime;
-    } else {
-        req.session.datetime = fixedValues.NotUsedVariableDate;
-    }
+        if (time) {
+          req.session.time = time;
+      } else {
+          req.session.time = fixedValues.NotUsedVariableString;
+      }
+
+      if (datetime) {
+          req.session.datetime = datetime;
+      } else {
+          req.session.datetime = fixedValues.NotUsedVariableDate;
+      }
+  }
 
     res.redirect("/termin");
+})
+
+app.get("/api/event", async (req: Request, res: Response) => {
+  let eventid = req.session.eventid;
+  let termindaten= JSON.parse('{}');; //Um Typescript zu zeigen, dass es um ein JSON Object und nicht um einen String geht
+  // console.log('test');
+  termindaten = await sql_execute(`Select * From Termine Where TerminID = ${eventid}`);
+  // let terimndatenjson = JSON.parse('{TerminID: 1, start: 2025-04-18T08:00:00.000Z, dauerMinuten: 30 }');
+  //console.log(termindaten[0].ende);
+
+  // let stDate = termindaten[0].start.toISOString().split("T")[0];
+  // let stTime = termindaten[0].start.toISOString().split("T")[1];
+
+  //TODO: Termine landen in falscher Event bubble
+  res.json({start: termindaten[0].start,  ende: termindaten[0].ende});
 })
 
 app.listen(PORT, () => {
