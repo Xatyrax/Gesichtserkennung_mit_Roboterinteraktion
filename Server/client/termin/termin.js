@@ -5,6 +5,7 @@ let data = await response.json();
 
                 if(data.eventid)
                 {
+                    try{
                     let eventresponse = await fetch('/api/event');
                     let eventdata = await eventresponse.json();
 
@@ -42,9 +43,14 @@ let data = await response.json();
                     let endTime = endHour + ":" + endMinutes;
 
                     //Gui füllen
+                    document.getElementById("eventid").value = data.eventid;
                     document.getElementById("date").textContent = date;
                     document.getElementById("startuhrzeit").value = startTime;
                     document.getElementById("enduhrzeit").value = endTime;
+                    }catch(er)
+                    {
+                        alert(er);
+                    }
                 }
                 else
                 {
@@ -65,12 +71,60 @@ let data = await response.json();
                         document.getElementById("enduhrzeit").value = endTimeString;
                     }
                 }
+
 });
 
+
 function speichern() {
-                window.location.href = "../calendar/calendar.html";
-            }
+
+    let eventid = document.getElementById("eventid").value;
+    let date = document.getElementById("date").textContent;
+    let starttime=document.getElementById("startuhrzeit").value;
+    let endtime=document.getElementById("enduhrzeit").value;
+    let sex=document.getElementById("geschlecht").value;
+    let firstname=document.getElementById("vorname").value;
+    let lastname=document.getElementById("nachname").value;
+    let birthday=document.getElementById("geburtsdatum").value;
+    let phone=document.getElementById("telefon").value;
+    let mail=document.getElementById("mail").value;
+
+    // alert (endtime);
+
+    const form = document.createElement('form');
+    form.method = "POST";
+    form.action = "/api/event";
+
+    addHiddenField(form,'eventid',eventid);
+    addHiddenField(form,'date',date);
+    addHiddenField(form,'starttime',starttime);
+    addHiddenField(form,'endtime',endtime);
+    addHiddenField(form,'sex',sex);
+    addHiddenField(form,'firstname',firstname);
+    addHiddenField(form,'lastname',lastname);
+    addHiddenField(form,'birthday',birthday);
+    addHiddenField(form,'phone',phone);
+    addHiddenField(form,'mail',mail);
+
+    document.body.appendChild(form);
+    form.submit();
+    // alert (endtime);
+
+    // form.submit();
+
+
+    // window.location.href = "../calendar/calendar.html";
+}
 
 function abbrechen() {
                 window.location.href = "../calendar/calendar.html";
             }
+
+
+//Helper Functions
+function addHiddenField(formObj, name, value) {
+    const hiddenField = document.createElement('input');
+    hiddenField.type = 'hidden';
+    hiddenField.name = name;
+    hiddenField.value = value;
+    formObj.appendChild(hiddenField);
+}

@@ -1,7 +1,8 @@
 import express,{ Request, Response } from 'express';
 import { FileFilterCallback } from 'multer';
 import session from 'express-session';
-import { sql_execute } from './phandam_modules/db_utils';
+import { sql_execute, sql_execute_write } from './phandam_modules/db_utils';
+import { convertToDatetime } from './phandam_modules/date_time_utils';
 import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
 import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions'
@@ -164,18 +165,44 @@ app.post("/api/client", (req: Request, res: Response) => {
 })
 
 app.get("/api/event", async (req: Request, res: Response) => {
+  //TODO: leere ID abfangen
   let eventid = req.session.eventid;
-  let termindaten= JSON.parse('{}');; //Um Typescript zu zeigen, dass es um ein JSON Object und nicht um einen String geht
-  // console.log('test');
+  let termindaten = JSON.parse('{}'); //Um Typescript zu zeigen, dass es um ein JSON Object und nicht um einen String geht
   termindaten = await sql_execute(`Select * From Termine Where TerminID = ${eventid}`);
-  // let terimndatenjson = JSON.parse('{TerminID: 1, start: 2025-04-18T08:00:00.000Z, dauerMinuten: 30 }');
-  //console.log(termindaten[0].ende);
 
-  // let stDate = termindaten[0].start.toISOString().split("T")[0];
-  // let stTime = termindaten[0].start.toISOString().split("T")[1];
-
-  //TODO: Termine landen in falscher Event bubble
   res.json({start: termindaten[0].start,  ende: termindaten[0].ende});
+})
+
+app.post("/api/event", async (req: Request, res: Response) => {
+
+  //Date
+  let eventid = req.body.eventid;
+  let date = req.body.date;
+  let starttime = req.body.starttime;
+  let endtime = req.body.endtime;
+  let sex = req.body.sex;
+  let firstname = req.body.firstname;
+  let lastname = req.body.lastname;
+  let birthday = req.body.birthday;
+  let phone = req.body.phone;
+  let mail = req.body.mail;
+
+  let startdatetime = new Date(date + " " + starttime + ":00");
+  let enddatetime = new Date(date + " " + endtime + ":00");
+
+  if(eventid)
+  {
+    let data = [startdatetime, enddatetime, eventid];
+    let sqlcommand = "Update Termine set start = ?, ende = ? Where TerminID = ?";
+
+    sql_execute_write(sqlcommand,data);
+  }
+
+  // console.log(date);
+
+  res.redirect("/");
+
+  // res.json({start: termindaten[0].start,  ende: termindaten[0].ende});
 })
 
 app.listen(PORT, () => {
