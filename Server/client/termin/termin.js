@@ -133,6 +133,23 @@ function abbrechen() {
                 window.location.href = "../calendar/calendar.html";
             }
 
+function loeschen() {
+
+    let eventid = document.getElementById("eventid").value;
+
+    const form = document.createElement('form');
+    form.method = "POST";
+    form.action = "/api/event";
+
+    addHiddenField(form, 'delete', true);
+    addHiddenField(form,'eventid',eventid);
+
+    document.body.appendChild(form);
+    form.submit();
+
+
+}
+
 
 //Helper Functions
 function addHiddenField(formObj, name, value) {

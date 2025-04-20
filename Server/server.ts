@@ -15,6 +15,8 @@ const db_connection = require('./phandam_modules/dbConnect.js');
 // const {wss, sendToClient, getLastMessage} = require('./api/websocket.js');
 import './api/websocket';
 import {sendToClient, getLastMessage } from './api/websocket_modules';
+import methodOverride from 'method-override';
+
 
 const app = express();
 const PORT = 3000;
@@ -55,13 +57,18 @@ const storage_sprache = multer.diskStorage({
 });
 const upload_sprache = multer({ storage: storage_sprache });
 
+
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
+
 app.use(express.json());
+
 app.use(express.static(path.join(__dirname, 'client')));
 app.use(session({secret: "sec",
   saveUninitialized: true,
   resave: true
 }))
-app.use(express.urlencoded({ extended: true }));
+
 
 app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, 'client', 'calendar/calendar.html'));
@@ -203,9 +210,24 @@ app.get("/api/event", async (req: Request, res: Response) => {
 
 app.post("/api/event", async (req: Request, res: Response) => {
 
+  let eventid:number|null = req.body.eventid == '' ? null : req.body.eventid;
+
+  if(req.body.delete == 'true')
+  {
+    //TODO: letztes Patientenvorkommen? --> Patienten werden nicht gelöscht?
+    if(eventid)
+    {
+        let data = [eventid];
+        let command = "Delete from Appointments Where AppointmentID = ?";
+        sql_execute_write(command,data);
+    }
+
+    res.redirect("/");
+    return;
+  }
   //Date
   //TODO:Datentypen
-  let eventid = req.body.eventid;
+
   let date = req.body.date;
   let starttime = req.body.starttime;
   let endtime = req.body.endtime;
@@ -230,40 +252,56 @@ app.post("/api/event", async (req: Request, res: Response) => {
     PatientID = Patientendaten[0].PatientID;
   }
 
-  //Vorhandener oder neuer Termin
-  if(eventid)
+  //Patient vorhanden?
+  if(PatientID != null)
   {
-    //Patient vorhanden?
-    if(PatientID != null)
+    //Patientendaten geändert?
+    if(Patientendaten[0].Sex != sex
+      || Patientendaten[0].Phone != phone
+      || Patientendaten[0].Mail != mail)
     {
-      //Patientendaten geändert?
-      if(Patientendaten[0].Sex != sex
-        || Patientendaten[0].Phone != phone
-        || Patientendaten[0].Mail != mail)
-        {
-          let Updatedata = [sex??null, phone??null, mail??null, PatientID];
-          let Updatesqlcommand = "Update Patients set Sex = ?, Phone = ?, Mail = ?  Where PatientID = ?";
-          sql_execute_write(Updatesqlcommand,Updatedata);
-        }
-      //TODO:PatientenUpdate nötig?
+      let Updatedata = [sex??null, phone??null, mail??null, PatientID];
+      let Updatesqlcommand = "Update Patients set Sex = ?, Phone = ?, Mail = ?  Where PatientID = ?";
+      sql_execute_write(Updatesqlcommand,Updatedata);
+    }
 
+    //Vorhandener oder neuer Termin
+    if(eventid)
+    {
       let data = [startdatetime, enddatetime, PatientID, eventid];
       let sqlcommand = "Update Appointments set Start = ?, End = ?, PatientID = ? Where AppointmentID = ?";
       sql_execute_write(sqlcommand,data);
     }
-    else{
-      //TODO:Hier wird nichts angelegt. Patienen werden nur mit Gesicht angelegt und können hier maximal geändert werden
-      // --> Error
+    else
+    {
+      let data = [startdatetime, enddatetime, PatientID];
+      let sqlcommand = "INSERT INTO Appointments (Start, End, PatientID) VALUES (?,?,?)";
+      sql_execute_write(sqlcommand,data);
     }
-
-
+  }
+  else{
+    //TODO:Hier wird nichts angelegt. Patienen werden nur mit Gesicht angelegt und können hier maximal geändert werden
+    // --> Error
   }
 
-  // console.log(date);
+  res.redirect("/");
+});
+
+app.delete("/api/event/:id", (req: Request, res: Response) => {
+
+  //Date
+  //TODO:Datentypen
+  let eventid:number = Number(req.params.id);
+
+  //TODO: letztes Patientenvorkommen? --> Patienten werden nicht gelöscht?
+  if(eventid)
+  {
+      let data = [eventid];
+      let command = "Delete from Appointments Where AppointmentID = ?";
+      sql_execute_write(command,data);
+  }
 
   res.redirect("/");
-
-  // res.json({start: termindaten[0].start,  ende: termindaten[0].ende});
 })
 
 app.listen(PORT, () => {
