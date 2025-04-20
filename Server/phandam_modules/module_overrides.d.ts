@@ -5,6 +5,7 @@ declare module "express-session" {
     eventid: string;
     date: string;
     time: string;
+    weekdate: Date;
     datetime: Date;
   }
 }

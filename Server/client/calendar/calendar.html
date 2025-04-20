@@ -8,10 +8,12 @@
 </head>
 <body>
 <h1>Phandam</h1>
-<h2>[Datum der Woche]</h2>
+<div class="UnderHeadline">
+    <span id="weekdates" >[Datum der Woche]</span>
+</div>
 <div class="navigation">
-<button onclick="speichern()" class="navigationButton">Zurück</button>
-<button onclick="speichern()" class="navigationButton">Vorwärts</button>
+<button onclick="backward()" class="navigationButton">Zurück</button>
+<button onclick="forward()" class="navigationButton">Vorwärts</button>
 </div>
     <div class="calendar-container">
         <div id="calendar" class="calendar"></div>

@@ -2,7 +2,7 @@ import express,{ Request, Response } from 'express';
 import { FileFilterCallback } from 'multer';
 import session from 'express-session';
 import { sql_execute, sql_execute_write } from './phandam_modules/db_utils';
-import { convertToDatetime } from './phandam_modules/date_time_utils';
+// import { convertToDatetime } from './phandam_modules/date_time_utils';
 import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
 import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions'
@@ -90,11 +90,18 @@ app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request
 app.get("/api/calendar", async (req: Request, res: Response) => {
 
   let termine;
+  //TODO: Zu negativabfrage umwandeln
+  if(req.session.weekdate)
+  {}
+  else
+  {
+    req.session.weekdate = new Date();
+  }
+
   try{
   termine = await sql_execute('Select * From Termine');
-  //console.log(termine);
 
-  res.json({ OeffnungszeitVon: fixedValues.OeffnungszeitVon,
+  res.json({dateOfTheWeek: req.session.weekdate, OeffnungszeitVon: fixedValues.OeffnungszeitVon,
     OeffnungszeitBis: fixedValues.OeffnungszeitBis,
     Termine: JSON.stringify(termine)
   });
@@ -103,7 +110,27 @@ app.get("/api/calendar", async (req: Request, res: Response) => {
     res.json({ OeffnungszeitVon: fixedValues.OeffnungszeitVon, OeffnungszeitBis: fixedValues.OeffnungszeitBis});
   }
 
-})
+});
+
+app.post("/api/calendar", async (req: Request, res: Response) => {
+
+
+  if(req.session.weekdate)
+  {
+    let newDate:Date = new Date(req.session.weekdate);
+    if(req.body.forward == 'true')
+    {
+      newDate.setDate(newDate.getDate() + 7);
+    }
+    else
+    {
+      newDate.setDate(newDate.getDate() - 7);
+    }
+    req.session.weekdate = newDate;
+
+    res.redirect("/");
+  }
+});
 
 app.get("/api/client", (req: Request, res: Response) => {
   if(req.session.eventid)

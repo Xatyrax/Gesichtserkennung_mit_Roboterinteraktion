@@ -4,10 +4,29 @@
 document.addEventListener("DOMContentLoaded", async function () {
             const calendarEl = document.getElementById("calendar");
 
-            // Get the start of the current week (Monday)
-            let today = new Date();
+            let response = await fetch('/api/calendar');
+            let data = await response.json();
+
+            //TODO: Conversion Functions
+            let arrweekday = String(data.dateOfTheWeek).split("T")[0].split("-");
+            let today = new Date(arrweekday[0],arrweekday[1]-1,arrweekday[2],12,0,0);
+
             let dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
             let startOfWeek = new Date(today.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)));
+
+            let endOfWeek = new Date(today);
+            if(dayOfWeek == 0){endOfWeek.setDate(endOfWeek.getDate()+6);}
+            else if(dayOfWeek == 1){endOfWeek.setDate(endOfWeek.getDate()+5);}
+            else if(dayOfWeek == 2){endOfWeek.setDate(endOfWeek.getDate()+4);}
+            else if(dayOfWeek == 3){endOfWeek.setDate(endOfWeek.getDate()+3);}
+            else if(dayOfWeek == 4){endOfWeek.setDate(endOfWeek.getDate()+2);}
+            else if(dayOfWeek == 5){endOfWeek.setDate(endOfWeek.getDate()+1);}
+            else if(dayOfWeek == 6){endOfWeek.setDate(endOfWeek.getDate()+0);}
+
+            //TODO: Conversion Functions
+            const startOfWeekShort = startOfWeek.toLocaleDateString("de-DE", {year: 'numeric',  month: '2-digit',  day: '2-digit',});
+            const endOfWeekShort = endOfWeek.toLocaleDateString("de-DE", {year: 'numeric',  month: '2-digit',  day: '2-digit',});
+            document.getElementById("weekdates").textContent = startOfWeekShort + " - " + endOfWeekShort;
 
             // Headers: Time + 7 Weekdays
             let headers = ['Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -19,8 +38,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
 
             // Generate Time Slots (8 AM - 5 PM)
-            let response = await fetch('/api/calendar');
-            let data = await response.json();
+
 
             let hours = [];
             for (let i = data.OeffnungszeitVon; i <= data.OeffnungszeitBis; i++) {
@@ -66,9 +84,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                     eventEl.addEventListener("click", TerminBearbeiten);
                     cell.appendChild(eventEl);
                 }
-                //alert(`${JSON.stringify(termin)}`);
             });
 
+});
 
             function addEvent(e) {
                 let date = e.target.getAttribute("data-date");
@@ -111,4 +129,34 @@ document.addEventListener("DOMContentLoaded", async function () {
                 document.body.appendChild(form);
                 form.submit();
             }
-        });
+
+            function forward(){
+                const form = document.createElement('form');
+                form.method = "POST";
+                form.action = "/api/calendar";
+
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = 'forward';
+                hiddenField.value = true;
+                form.appendChild(hiddenField);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+
+            function backward(){
+                const form = document.createElement('form');
+                form.method = "POST";
+                form.action = "/api/calendar";
+
+                const hiddenField = document.createElement('input');
+                hiddenField.type = 'hidden';
+                hiddenField.name = 'forward';
+                hiddenField.value = false;
+                form.appendChild(hiddenField);
+
+                document.body.appendChild(form);
+                form.submit();
+            }
+
