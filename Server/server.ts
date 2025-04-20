@@ -1,19 +1,20 @@
+const path = require('path');
+const bodyParser = require("body-parser");
 import express,{ Request, Response } from 'express';
-import { FileFilterCallback } from 'multer';
+import multer,{ FileFilterCallback } from 'multer';
 import session from 'express-session';
 import { sql_execute, sql_execute_write } from './phandam_modules/db_utils';
 import { convertDateToUString } from './phandam_modules/date_time_utils';
 import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
 import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions'
-const multer = require('multer');
-const path = require('path');
-const bodyParser = require("body-parser");
-const mysql = require('mysql2');
-import { QueryError } from 'mysql2';
-const db_connection = require('./phandam_modules/dbConnect.js');
 import './api/websocket';
 import {sendToClient, getLastMessage } from './api/websocket_modules';
+import {StartBackgroudActions} from './phandam_modules/backgroudTasks';
+// const multer = require('multer');
+// const mysql = require('mysql2');
+// import { QueryError } from 'mysql2';
+// const db_connection = require('./phandam_modules/dbConnect.js');
 
 
 const app = express();
@@ -64,6 +65,15 @@ app.use(session({secret: "sec",
   resave: true
 }))
 
+/**************
+*   Startup   *
+***************/
+
+StartBackgroudActions();
+
+/***********
+*   URLs   *
+************/
 
 app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, 'client', 'calendar/calendar.html'));
@@ -74,7 +84,7 @@ app.get('/termin', (req: Request, res: Response) => {
 })
 
 /**********
-*   API   * //In API auslagern
+*   API   * //TODO:In API auslagern
 ***********/
 
 app.post('/upload/sprache', upload_sprache.single('myfile'), async (req: Request, res: Response) => {
