@@ -43,23 +43,14 @@ const db = require('./phandam_modules/dbConnect.js');
         console.log('User permission altered');
     });
 
-    let createTermineTableQuery = `CREATE TABLE Termine (
-            TerminID INT AUTO_INCREMENT PRIMARY KEY,
-            start DATETIME NOT NULL,
-            ende DATETIME NOT NULL,
-            dauerMinuten INT NOT NULL
-        );`;
-    db.query(createTermineTableQuery, (err, result) => {
-        if (err) {
-            throw err;
-        }
-        console.log('Termine Tabelle erstellt');
-    });
-
-    let createPatientenTableQuery = `CREATE TABLE Patienten (
+    let createPatientenTableQuery = `CREATE TABLE Patients (
             PatientID INT AUTO_INCREMENT PRIMARY KEY,
-            vorname VARCHAR(255) NOT NULL,
-            nachname VARCHAR(255) NOT NULL
+            Firstname VARCHAR(255) NOT NULL,
+            Lastname VARCHAR(255) NOT NULL,
+            Sex VARCHAR(1),
+            Birthday DATETIME NOT NULL,
+            Phone VARCHAR(64),
+            Mail VARCHAR(255)
         );`;
     db.query(createPatientenTableQuery, (err, result) => {
         if (err) {
@@ -68,9 +59,23 @@ const db = require('./phandam_modules/dbConnect.js');
         console.log('Patienten Tabelle erstellt');
     });
 
+    let createTermineTableQuery = `CREATE TABLE Appointments (
+            AppointmentID INT AUTO_INCREMENT PRIMARY KEY,
+            Start DATETIME NOT NULL,
+            End DATETIME NOT NULL,
+            PatientID INT,
+            FOREIGN KEY (PatientID) REFERENCES Patients(PatientID)
+        );`;
+    db.query(createTermineTableQuery, (err, result) => {
+        if (err) {
+            throw err;
+        }
+        console.log('Termine Tabelle erstellt');
+    });
+
     let createBehandlungsräumeTableQuery = `CREATE TABLE Behandlungsräume (
             BehandlungsraumID INT AUTO_INCREMENT PRIMARY KEY,
-            frei BIT NOT NULL
+            Free BIT NOT NULL
         );`;
     db.query(createBehandlungsräumeTableQuery, (err, result) => {
         if (err) {
@@ -80,36 +85,36 @@ const db = require('./phandam_modules/dbConnect.js');
     });
 
     let personData = [
-            ['vor1', 'nach1'],
-            ['vor2', 'nach2'],
-            ['vor3', 'nach3']
+            ['Max', 'Mustermann', '1990-02-01T00:00'],
+            ['Isaac', 'Asimov', '1999-10-18T00:00'],
+            ['Christopher', 'Paolini', '2001-11-21T00:00']
         ];
 
-        let sqlInsertPatient = `INSERT INTO Patienten
-            (vorname, nachname)
+        let sqlInsertPatient = `INSERT INTO Patients
+            (Firstname, Lastname, Birthday)
             VALUES ?`;
 
         db.query(sqlInsertPatient, [personData], (err, result) => {
             if (err) {
                 throw err;
             }
-            console.log('Data inserted into Patienten table');
+            console.log('Data inserted into Patients table');
         });
 
         let termineData = [
-            ['2025-04-18T10:00', '2025-04-18T10:30', '30'],
-            ['2025-04-19T11:00', '2025-04-19T11:30', '30'],
-            ['2025-04-20T12:00', '2025-04-20T12:30', '30']
+            ['2025-04-18T10:00', '2025-04-18T10:30', '1'],
+            ['2025-04-19T11:00', '2025-04-19T11:30', '2'],
+            ['2025-04-20T12:00', '2025-04-20T12:30', '3']
         ];
 
-        let sqlInsertTermine = `INSERT INTO Termine
-            (start, ende, dauerMinuten)
+        let sqlInsertTermine = `INSERT INTO Appointments
+            (Start, End, PatientID)
             VALUES ?`;
 
         db.query(sqlInsertTermine, [termineData], (err, result) => {
             if (err) {
                 throw err;
             }
-            console.log('Data inserted into Termine table');
+            console.log('Data inserted into Appointments table');
         });
 //});

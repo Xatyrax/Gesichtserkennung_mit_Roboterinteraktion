@@ -11,10 +11,13 @@ let data = await response.json();
 
                     let startDateObj = new Date(eventdata.start);
                     let endDateObj = new Date(eventdata.ende);
-                    let arrStart = eventdata.start.split("T");
+                    let arrStart = eventdata.date.split("T");
 
                     //Date
-                    let date = arrStart[0];
+                    let arrEventdate = String(eventdata.date).split("T")[0].split("-");
+                    let eventdate = new Date(arrEventdate[0],arrEventdate[1]-1,arrEventdate[2],12,0,0);
+                    let date = eventdate.toLocaleDateString("de-DE", {year: 'numeric',  month: '2-digit',  day: '2-digit',});
+
 
                     //Starttime
                     let startHour = '';
@@ -42,11 +45,22 @@ let data = await response.json();
                         endMinutes = endDateObj.getMinutes().toString();
                     let endTime = endHour + ":" + endMinutes;
 
+                    //Patientendaten
+                    let arrbithday = String(eventdata.geburtstag).split("T")[0].split("-");
+                    let birthday = new Date(arrbithday[0],arrbithday[1]-1,arrbithday[2],12,0,0);
+
                     //Gui füllen
                     document.getElementById("eventid").value = data.eventid;
                     document.getElementById("date").textContent = date;
                     document.getElementById("startuhrzeit").value = startTime;
                     document.getElementById("enduhrzeit").value = endTime;
+                    document.getElementById("geschlecht").value = eventdata.geschlecht;
+                    document.getElementById("vorname").value = eventdata.vorname;
+                    document.getElementById("nachname").value = eventdata.nachname;
+                    document.getElementById("geburtsdatum").value = birthday.toISOString().substring(0, 10);
+                    document.getElementById("telefon").value = eventdata.telefon;
+                    document.getElementById("mail").value = eventdata.mail;
+
                     }catch(er)
                     {
                         alert(er);

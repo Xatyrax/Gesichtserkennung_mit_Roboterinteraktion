@@ -2,7 +2,7 @@ import express,{ Request, Response } from 'express';
 import { FileFilterCallback } from 'multer';
 import session from 'express-session';
 import { sql_execute, sql_execute_write } from './phandam_modules/db_utils';
-// import { convertToDatetime } from './phandam_modules/date_time_utils';
+import { convertDateToUString } from './phandam_modules/date_time_utils';
 import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
 import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions'
@@ -99,7 +99,8 @@ app.get("/api/calendar", async (req: Request, res: Response) => {
   }
 
   try{
-  termine = await sql_execute('Select * From Termine');
+    //TODO: Where Woche = heutige
+  termine = await sql_execute('Select A.AppointmentID, A.Start, A.End, P.Firstname, P.Lastname From Appointments AS A JOIN Patients AS P ON A.PatientID = P.PatientID');
 
   res.json({dateOfTheWeek: req.session.weekdate, OeffnungszeitVon: fixedValues.OeffnungszeitVon,
     OeffnungszeitBis: fixedValues.OeffnungszeitBis,
@@ -195,34 +196,67 @@ app.get("/api/event", async (req: Request, res: Response) => {
   //TODO: leere ID abfangen
   let eventid = req.session.eventid;
   let termindaten = JSON.parse('{}'); //Um Typescript zu zeigen, dass es um ein JSON Object und nicht um einen String geht
-  termindaten = await sql_execute(`Select * From Termine Where TerminID = ${eventid}`);
+  termindaten = await sql_execute(`Select A.Start, A.End, P.Sex, P.Firstname, P.Lastname, P.Birthday, P.Phone,P.Mail From Appointments AS A JOIN Patients AS P ON A.PatientID = P.PatientID Where A.AppointmentID = ${eventid}`);
 
-  res.json({start: termindaten[0].start,  ende: termindaten[0].ende});
+  res.json({date: convertDateToUString(termindaten[0].Start), start: termindaten[0].Start,  ende: termindaten[0].End,  geschlecht: termindaten[0].Sex,  vorname: termindaten[0].Firstname,  nachname: termindaten[0].Lastname,  geburtstag: convertDateToUString(termindaten[0].Birthday),  telefon: termindaten[0].Phone,  mail: termindaten[0].Mail});
 })
 
 app.post("/api/event", async (req: Request, res: Response) => {
 
   //Date
+  //TODO:Datentypen
   let eventid = req.body.eventid;
   let date = req.body.date;
   let starttime = req.body.starttime;
   let endtime = req.body.endtime;
-  let sex = req.body.sex;
+  let sex:string|null = req.body.sex == '' ? null : req.body.sex;
   let firstname = req.body.firstname;
   let lastname = req.body.lastname;
-  let birthday = req.body.birthday;
-  let phone = req.body.phone;
-  let mail = req.body.mail;
+  let birthday:Date = new Date(req.body.birthday);
+  let phone:string|null = req.body.phone == '' ? null : req.body.phone;
+  let mail:string|null = req.body.mail == '' ? null : req.body.mail;
 
+  //TODO: Conversion Function?
+  let BdaySqlString:string = convertDateToUString(birthday);
   let startdatetime = new Date(date + " " + starttime + ":00");
   let enddatetime = new Date(date + " " + endtime + ":00");
 
+  let Patientendaten:any = await sql_execute(`Select PatientID, Firstname, Lastname, Sex, Birthday, Phone, Mail From Patients Where Firstname = '${firstname}' AND Lastname = '${lastname}' AND Birthday = '${BdaySqlString}'`);
+
+  let PatientID:number|null = null;
+
+  if(Patientendaten[0])
+  {
+    PatientID = Patientendaten[0].PatientID;
+  }
+
+  //Vorhandener oder neuer Termin
   if(eventid)
   {
-    let data = [startdatetime, enddatetime, eventid];
-    let sqlcommand = "Update Termine set start = ?, ende = ? Where TerminID = ?";
+    //Patient vorhanden?
+    if(PatientID != null)
+    {
+      //Patientendaten geändert?
+      if(Patientendaten[0].Sex != sex
+        || Patientendaten[0].Phone != phone
+        || Patientendaten[0].Mail != mail)
+        {
+          let Updatedata = [sex??null, phone??null, mail??null, PatientID];
+          let Updatesqlcommand = "Update Patients set Sex = ?, Phone = ?, Mail = ?  Where PatientID = ?";
+          sql_execute_write(Updatesqlcommand,Updatedata);
+        }
+      //TODO:PatientenUpdate nötig?
 
-    sql_execute_write(sqlcommand,data);
+      let data = [startdatetime, enddatetime, PatientID, eventid];
+      let sqlcommand = "Update Appointments set Start = ?, End = ?, PatientID = ? Where AppointmentID = ?";
+      sql_execute_write(sqlcommand,data);
+    }
+    else{
+      //TODO:Hier wird nichts angelegt. Patienen werden nur mit Gesicht angelegt und können hier maximal geändert werden
+      // --> Error
+    }
+
+
   }
 
   // console.log(date);

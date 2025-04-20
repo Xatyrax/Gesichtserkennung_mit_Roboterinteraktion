@@ -71,16 +71,17 @@ document.addEventListener("DOMContentLoaded", async function () {
             //alert(`${data.Termine}`);
             JSON.parse(data.Termine).forEach(termin => {
 
-                let startDate = new Date(termin.start);
-                let dateStr = startDate.toISOString().split("T")[0];
-                let hourStr = startDate.getHours() + ":00";
+                let startDate = new Date(termin.Start);
+                let stDate = startDate.toISOString().split("T")[0];
+                let stStartTime = String(startDate.getHours()).padStart(2, '0') + ":" + String(startDate.getMinutes()).padStart(2, '0');
+                let stHour = startDate.getHours() + ":00";
 
-                let cell = calendarEl.querySelector(`.day[data-date='${dateStr}'][data-time='${hourStr}']`);
+                let cell = calendarEl.querySelector(`.day[data-date='${stDate}'][data-time='${stHour}']`);
                 if (cell) {
                     let eventEl = document.createElement("div");
                     eventEl.classList.add("event");
-                    eventEl.textContent = 'Test';
-                    eventEl.setAttribute("id", termin.TerminID);
+                    eventEl.textContent = stStartTime + " Uhr: " + termin.Lastname;
+                    eventEl.setAttribute("id", termin.AppointmentID);
                     eventEl.addEventListener("click", TerminBearbeiten);
                     cell.appendChild(eventEl);
                 }
