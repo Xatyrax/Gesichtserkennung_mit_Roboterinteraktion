@@ -12,10 +12,8 @@ const bodyParser = require("body-parser");
 const mysql = require('mysql2');
 import { QueryError } from 'mysql2';
 const db_connection = require('./phandam_modules/dbConnect.js');
-// const {wss, sendToClient, getLastMessage} = require('./api/websocket.js');
 import './api/websocket';
 import {sendToClient, getLastMessage } from './api/websocket_modules';
-import methodOverride from 'method-override';
 
 
 const app = express();
@@ -59,10 +57,7 @@ const upload_sprache = multer({ storage: storage_sprache });
 
 
 app.use(express.urlencoded({ extended: true }));
-app.use(methodOverride('_method'));
-
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, 'client')));
 app.use(session({secret: "sec",
   saveUninitialized: true,
@@ -286,23 +281,6 @@ app.post("/api/event", async (req: Request, res: Response) => {
 
   res.redirect("/");
 });
-
-app.delete("/api/event/:id", (req: Request, res: Response) => {
-
-  //Date
-  //TODO:Datentypen
-  let eventid:number = Number(req.params.id);
-
-  //TODO: letztes Patientenvorkommen? --> Patienten werden nicht gelöscht?
-  if(eventid)
-  {
-      let data = [eventid];
-      let command = "Delete from Appointments Where AppointmentID = ?";
-      sql_execute_write(command,data);
-  }
-
-  res.redirect("/");
-})
 
 app.listen(PORT, () => {
     console.log(`Website running at http://localhost:${PORT}`);
