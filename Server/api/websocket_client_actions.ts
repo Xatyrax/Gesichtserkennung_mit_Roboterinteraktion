@@ -1,0 +1,153 @@
+import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
+import fixedValues from '../phandam_modules/config';
+import { sleep } from '../phandam_modules/timing_utils';
+
+async function generateAudioRequestActions(message:string){
+  let messageObj;
+  try{
+    messageObj = JSON.parse(message);
+  }
+  catch{sendToClient(fixedValues.websocket_spracherkennungID,'Fehlerhaft formatierte Nachricht');}
+  let spracherkennungInitMessage = `{"type": "GENERATE_AUDIO_REQUEST","message": {"fileName":"Audio.m4a","text":"${messageObj.Text}"}}`;
+  sendToClient(fixedValues.websocket_spracherkennungID,spracherkennungInitMessage);
+  for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
+             try{
+                const parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_spracherkennungID));
+                if(parsedjson.type == 'AUDIO_GENERATION_REQUEST_SUCCESS')
+                {
+                  let smartphoneresponse = `{"type":"AUDIO_GENERATION_REQUEST_SUCCESS"}`;
+                  sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+                  return;
+                }
+             }catch{}
+            await sleep();
+          }
+          let smartphoneresponse = `{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"Timeout"}`
+          sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+}
+
+export namespace smartphone_wscom{ //Namenskollisionen mit den anderen Websockets vermeiden
+    //TODO: Implement
+    export function IsMessageInit(message:string): Boolean{
+      try{
+        const parsedjson = JSON.parse(message);
+        switch (parsedjson.type) {
+        case 'AUDIO_GENERATION_REQUEST':
+          return true;
+        default:
+          return false;
+      }
+
+      }
+      catch
+      {
+        return false;
+      }
+        return false;
+    }
+
+    export async function InitActions(message:string){
+      try{
+        const parsedjson = JSON.parse(message);
+        switch (parsedjson.type) {
+        case 'AUDIO_GENERATION_REQUEST':
+          generateAudioRequestActions(message);
+        default:
+          return false;
+      }
+
+      }
+      catch
+      {
+        return false;
+      }
+        return false;
+    }
+}
+
+export async function voiceFileUploaded(){
+  sendToClient(fixedValues.websocket_spracherkennungID,'Bild hochgeladen. Erwarte Nachricht...');
+  for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
+    try{
+      const parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_spracherkennungID));
+      if(parsedjson.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
+      {
+        let vorname = parsedjson.message.text.firstname;
+        let nachname = parsedjson.message.text.lastname;
+        let Geschlecht = parsedjson.message.text.sex;
+        let Gebrutsdatum = parsedjson.message.text.dateOfBirth;
+        let Tel = parsedjson.message.text.phoneNumber;
+        let email = parsedjson.message.text.emailAddress;
+        let smartphoneresponse = `{"Success": "TRUE", "message": {"firstname": "${vorname}", "lastname": "${nachname}", "sex": "${Geschlecht}", "dateOfBirth": "${Gebrutsdatum}", "phoneNumber": "${Tel}", "emailAddress": "${email}"}}`;
+        sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+        return;
+      }
+    }catch (error){
+      let smartphoneresponse = `{"Success": "FALSE", "message": "${error}"}`
+      sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+    }
+    await sleep();
+  }
+  let smartphoneresponse = `{"Success": "FALSE", "message": "Timeout"}`
+  sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+  sendToClient(fixedValues.websocket_spracherkennungID,'Timeout');
+}
+
+export async function faceFileUploaded(){
+    sendToClient(fixedValues.websocket_gesichtserkennungID,'{"Type": "AVALIBLE"}');
+  for (let i = 0; i < fixedValues.TimeoutGesichtInSekunden; i++) {
+    try{
+      let unparsed = getLastMessage(fixedValues.websocket_gesichtserkennungID);
+      let parsedjson = JSON.parse('{}');
+      if(unparsed !== fixedValues.NotUsedVariableString){
+        parsedjson = JSON.parse(unparsed);
+      }
+      //TODO: to Lower
+      if(parsedjson.type == 'AVALIBLE_ANSWER')
+      {
+        let Answer = parsedjson.answer;
+        let BildID = parsedjson.bild_id;
+        sendToClient(fixedValues.websocket_gesichtserkennungID,`{"Answer":"${Answer}"; "BildID":"${BildID}"}`);
+        if(Answer == 'TRUE')
+        {
+          //TODO: Appointment abfragen
+          let Appointment = 'TRUE';
+          sendToClient(fixedValues.websocket_smartphoneID,`{"type":"Known_Customer", "Appointment":"${Appointment}"}`);
+          if(Appointment == 'TRUE')
+          {
+            sendToClient(fixedValues.websocket_smartphoneID,`{"type":"Customer_Appointment"}`);
+            sendToClient(fixedValues.websocket_RoboterID,`{"Type": "DRIVE_TO_ROOM", "Target":"[0, 1, 0, 0]"}`);
+            for (let i = 0; i < fixedValues.TimeoutRoboterInSekunden; i++) {
+              //TODO: JSON abfrage auslagern
+              try{
+                  let message_walle = JSON.parse(getLastMessage(fixedValues.websocket_RoboterID));
+                  if(message_walle.Type == 'DRIVE_TO_ROOM_ANSWER')
+                  {
+                    if(message_walle.Answer == 'TRUE')
+                    {
+                      return;
+                    }
+                    else
+                    {
+                      //TODO: Fehler
+                    }
+                  }
+              }
+
+              catch
+              {}
+              await sleep();
+            }
+          }
+        }
+        else if(Answer == 'FALSE')
+        {
+          sendToClient(fixedValues.websocket_smartphoneID,`{"type":"Unknown_Customer"}`);
+        }
+        sendToClient(fixedValues.websocket_smartphoneID,`{"Answer":"Patient vorhanden"; "Patientendaten":"Daten"}`);
+        return;
+      }
+    }catch{}
+    await sleep();
+  }
+}

@@ -64,6 +64,10 @@ h1{color: white; text-align: center;}
             position: relative;
             background: #fff;
             transition: background 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
+            overflow-y: auto;
         }
 
         .day:hover {
@@ -76,9 +80,9 @@ h1{color: white; text-align: center;}
             font-size: 12px;
             padding: 5px;
             border-radius: 5px;
-            position: absolute;
             left: 5px;
             right: 5px;
             top: 5px;
             cursor: pointer;
+            margin: 3px 0;
         }

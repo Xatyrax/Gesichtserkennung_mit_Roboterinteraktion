@@ -285,6 +285,7 @@ app.post("/api/event", async (req: Request, res: Response) => {
     }
   }
   else{
+    console.log('Patient nicht gefunden. Neu anlegen nur über Smartphone.')
     //TODO:Hier wird nichts angelegt. Patienen werden nur mit Gesicht angelegt und können hier maximal geändert werden
     // --> Error
   }

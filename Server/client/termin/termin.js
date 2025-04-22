@@ -102,7 +102,11 @@ function speichern() {
     let phone=document.getElementById("telefon").value;
     let mail=document.getElementById("mail").value;
 
-    // alert (endtime);
+    let arrdate = date.split(".");
+    let year = arrdate[2];
+    let month = arrdate[1];
+    let day = arrdate[0];
+    date = year + "-" + month + "-" + day;
 
     const form = document.createElement('form');
     form.method = "POST";
