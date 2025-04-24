@@ -1,6 +1,7 @@
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
 import fixedValues from '../phandam_modules/config';
 import { sleep } from '../phandam_modules/timing_utils';
+import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout} from './websocket_messages';
 
 async function generateAudioRequestActions(message:string){
   let messageObj;
@@ -26,12 +27,39 @@ async function generateAudioRequestActions(message:string){
           sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
 }
 
+function DebugMode(Message_mode:string, value:number):string{
+  console.log(Message_mode + " " + value.toString());
+  switch (Message_mode) {
+        case 'Gesichtsupload':
+           console.log('Case Gesichtsupload');
+          switch (value) {
+            case 0:
+
+              return SM_Face_KnownPatient_WithAppointment();
+            case 1:
+              return SM_Face_KnownPatient_WithoutAppointment();
+            case 2:
+              return SM_Face_UnknownPatient();
+            case 3:
+              return SM_Face_Timeout();
+            default:
+              return 'Error';
+          }
+        default:
+          return 'Error';
+      }
+}
+
 export namespace smartphone_wscom{ //Namenskollisionen mit den anderen Websockets vermeiden
     //TODO: Implement
     export function IsMessageInit(message:string): Boolean{
       try{
         const parsedjson = JSON.parse(message);
         switch (parsedjson.type) {
+        case 'DEBUG':
+
+          sendToClient(fixedValues.websocket_smartphoneID,DebugMode(parsedjson.mode,parseInt(parsedjson.value)));
+          return true;
         case 'AUDIO_GENERATION_REQUEST':
           return true;
         default:
@@ -94,28 +122,33 @@ export async function voiceFileUploaded(){
 }
 
 export async function faceFileUploaded(){
-    sendToClient(fixedValues.websocket_gesichtserkennungID,'{"Type": "AVALIBLE"}');
+  sendToClient(fixedValues.websocket_gesichtserkennungID,'{"Type": "AVALIBLE"}');
   for (let i = 0; i < fixedValues.TimeoutGesichtInSekunden; i++) {
     try{
-      let unparsed = getLastMessage(fixedValues.websocket_gesichtserkennungID);
-      let parsedjson = JSON.parse('{}');
-      if(unparsed !== fixedValues.NotUsedVariableString){
-        parsedjson = JSON.parse(unparsed);
-      }
+      // let unparsed = getLastMessage(fixedValues.websocket_gesichtserkennungID);
+      // let parsedjson = JSON.parse('{}');
+      // if(unparsed !== fixedValues.NotUsedVariableString){
+      //   parsedjson = JSON.parse(unparsed);
+      let parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_gesichtserkennungID));
+      // }
       //TODO: to Lower
       if(parsedjson.type == 'AVALIBLE_ANSWER')
       {
         let Answer = parsedjson.answer;
         let BildID = parsedjson.bild_id;
-        sendToClient(fixedValues.websocket_gesichtserkennungID,`{"Answer":"${Answer}"; "BildID":"${BildID}"}`);
+        //Debug
+        // sendToClient(fixedValues.websocket_gesichtserkennungID,`{"Answer":"${Answer}"; "BildID":"${BildID}"}`);
+
+        //Patient erkannt
         if(Answer == 'TRUE')
         {
           //TODO: Appointment abfragen
           let Appointment = 'TRUE';
-          sendToClient(fixedValues.websocket_smartphoneID,`{"type":"Known_Customer", "Appointment":"${Appointment}"}`);
+
+          //Patient hat Termin
           if(Appointment == 'TRUE')
           {
-            sendToClient(fixedValues.websocket_smartphoneID,`{"type":"Customer_Appointment"}`);
+            sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
             sendToClient(fixedValues.websocket_RoboterID,`{"Type": "DRIVE_TO_ROOM", "Target":"[0, 1, 0, 0]"}`);
             for (let i = 0; i < fixedValues.TimeoutRoboterInSekunden; i++) {
               //TODO: JSON abfrage auslagern
@@ -139,10 +172,15 @@ export async function faceFileUploaded(){
               await sleep();
             }
           }
+          //Patient hat keinen Termin
+          else
+          {
+            sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
+          }
         }
         else if(Answer == 'FALSE')
         {
-          sendToClient(fixedValues.websocket_smartphoneID,`{"type":"Unknown_Customer"}`);
+          sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
         }
         sendToClient(fixedValues.websocket_smartphoneID,`{"Answer":"Patient vorhanden"; "Patientendaten":"Daten"}`);
         return;

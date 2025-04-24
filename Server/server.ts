@@ -293,6 +293,6 @@ app.post("/api/event", async (req: Request, res: Response) => {
   res.redirect("/");
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Website running at http://localhost:${PORT}`);
 });
