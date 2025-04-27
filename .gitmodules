@@ -4,3 +4,6 @@
 [submodule "speech_recognition"]
 	path = speech_recognition
 	url = https://github.com/AnelD/speech_recognition.git
+[submodule "EV3"]
+	path = EV3
+	url = https://github.com/AlisaxK/EV3
