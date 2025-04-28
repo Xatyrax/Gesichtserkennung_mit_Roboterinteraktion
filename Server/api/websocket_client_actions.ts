@@ -113,6 +113,7 @@ export async function voiceFileUploaded(){
     }catch (error){
       let smartphoneresponse = `{"Success": "FALSE", "message": "${error}"}`
       sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+      return;
     }
     await sleep();
   }
