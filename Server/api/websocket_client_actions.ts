@@ -1,7 +1,7 @@
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
 import fixedValues from '../phandam_modules/config';
 import { sleep } from '../phandam_modules/timing_utils';
-import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout} from './websocket_messages';
+import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient} from './websocket_messages';
 
 async function generateAudioRequestActions(message:string){
   let messageObj;
@@ -74,7 +74,7 @@ export namespace smartphone_wscom{ //Namenskollisionen mit den anderen Websocket
         return false;
     }
 
-    export async function InitActions(message:string){
+export async function InitActions(message:string){
       try{
         const parsedjson = JSON.parse(message);
         switch (parsedjson.type) {
@@ -149,7 +149,7 @@ export async function faceFileUploaded(){
           if(Appointment == 'TRUE')
           {
             sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
-            sendToClient(fixedValues.websocket_RoboterID,`{"Type": "DRIVE_TO_ROOM", "Target":"[0, 1, 0, 0]"}`);
+            sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
             for (let i = 0; i < fixedValues.TimeoutRoboterInSekunden; i++) {
               //TODO: JSON abfrage auslagern
               try{

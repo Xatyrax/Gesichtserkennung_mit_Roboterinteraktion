@@ -88,6 +88,7 @@ const db = require('./phandam_modules/dbConnect.js');
             ['Max', 'Mustermann', '1990-02-01T00:00'],
             ['Isaac', 'Asimov', '1999-10-18T00:00'],
             ['Christopher', 'Paolini', '2001-11-21T00:00']
+            // ['Alexey', 'Pehov', '1963-09-30T00:00']
         ];
 
         let sqlInsertPatient = `INSERT INTO Patients
@@ -105,7 +106,8 @@ const db = require('./phandam_modules/dbConnect.js');
             ['2025-04-25T10:00', '2025-04-25T10:30', '1'],
             ['2025-04-26T11:00', '2025-04-26T11:30', '2'],
             ['2025-04-27T12:00', '2025-04-27T12:30', '3'],
-            ['2025-04-25T10:30', '2025-04-25T11:00', '2'],
+            ['2025-04-25T10:30', '2025-04-25T11:00', '2']
+            // ['2025-04-24T09:00', '2025-04-24T09:30', '4']
         ];
 
         let sqlInsertTermine = `INSERT INTO Appointments
