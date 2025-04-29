@@ -31,7 +31,7 @@ export function SM_Face_Timeout():string{return `{"type":"Timeout"}`;}
 /**************
 *   Roboter   *
 ***************/
-function DriveToTarget(target:string):string
+export function DriveToTarget(target:string):string
 {
 let arrTarget:string;
 
