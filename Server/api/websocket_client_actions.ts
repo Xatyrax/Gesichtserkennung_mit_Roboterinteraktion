@@ -1,32 +1,11 @@
 // import express,{ Request, Response } from 'express';
+import fs from 'fs';
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
 import fixedValues from '../phandam_modules/config';
 import { sleep } from '../phandam_modules/timing_utils';
-import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient} from './websocket_messages';
+import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure} from './websocket_messages';
 
-async function generateAudioRequestActions(message:string){
-  let messageObj;
-  try{
-    messageObj = JSON.parse(message);
-  }
-  catch{sendToClient(fixedValues.websocket_spracherkennungID,'Fehlerhaft formatierte Nachricht');}
-  let spracherkennungInitMessage = `{"type": "GENERATE_AUDIO_REQUEST","message": {"fileName":"Audio.m4a","text":"${messageObj.Text}"}}`;
-  sendToClient(fixedValues.websocket_spracherkennungID,spracherkennungInitMessage);
-  for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
-             try{
-                const parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_spracherkennungID));
-                if(parsedjson.type == 'AUDIO_GENERATION_REQUEST_SUCCESS')
-                {
-                  let smartphoneresponse = `{"type":"AUDIO_GENERATION_REQUEST_SUCCESS"}`;
-                  sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
-                  return;
-                }
-             }catch{}
-            await sleep();
-          }
-          let smartphoneresponse = `{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"Timeout"}`
-          sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
-}
+
 
 function DebugMode(Message_mode:string, value:number):string{
   console.log(Message_mode + " " + value.toString());
@@ -35,7 +14,6 @@ function DebugMode(Message_mode:string, value:number):string{
            console.log('Case Gesichtsupload');
           switch (value) {
             case 0:
-
               return SM_Face_KnownPatient_WithAppointment();
             case 1:
               return SM_Face_KnownPatient_WithoutAppointment();
@@ -43,6 +21,10 @@ function DebugMode(Message_mode:string, value:number):string{
               return SM_Face_UnknownPatient();
             case 3:
               return SM_Face_Timeout();
+            case 4:
+              return SM_Audio_GenerationSuccess();
+            case 5:
+              return SM_Audio_GenerationFailure('DebugError');
             default:
               return 'Error';
           }
@@ -58,8 +40,6 @@ export namespace smartphone_wscom{ //Namenskollisionen mit den anderen Websocket
         const parsedjson = JSON.parse(message);
         switch (parsedjson.type) {
         case 'DEBUG':
-
-          sendToClient(fixedValues.websocket_smartphoneID,DebugMode(parsedjson.mode,parseInt(parsedjson.value)));
           return true;
         case 'AUDIO_GENERATION_REQUEST':
           return true;
@@ -79,10 +59,12 @@ export async function InitActions(message:string){
       try{
         const parsedjson = JSON.parse(message);
         switch (parsedjson.type) {
+        case 'DEBUG':
+            sendToClient(fixedValues.websocket_smartphoneID,DebugMode(parsedjson.mode,parseInt(parsedjson.value)));
         case 'AUDIO_GENERATION_REQUEST':
-          generateAudioRequestActions(message);
+            AudioGeneration(parsedjson.Text);
         default:
-          return false;
+            return;
       }
 
       }
@@ -192,11 +174,57 @@ export async function faceFileUploaded(){
   }
 }
 
-// export function audioFileDownload(req:Request, res: Response):{filePath:string, res:Response}{
-//   const filePath = path.join(__dirname, 'download', fixedValues.generierteAudio_dateiname);
-//   res.setHeader('Content-Disposition', `attachment; filename="${fixedValues.generierteAudio_dateiname}"`);
-//   res.setHeader('Content-Type', 'audio/wav');
-//   // const fileStream = fs.createReadStream(filePath);
-//   // fileStream.pipe(res);
-//   return {filePath,res};
+export async function AudioGeneration(text:string){
+
+  //Datei löschen wenn existent
+  if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
+        fs.unlinkSync(fixedValues.generierteAudio_pfad);
+      }
+
+  //Spracherkennung mitteilen, das Audi genneriert werden soll
+  sendToClient(fixedValues.websocket_spracherkennungID,SP_Audio_Genaration_Request(text));
+
+  //Auf Generierung warten
+  for (let i = 0; i < fixedValues.TimeoutAudiogenerierungInSekunden; i++) {
+    try{
+      if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
+        break;
+      }
+    }
+    catch(error){console.log(error);}
+    await sleep();
+  }
+
+  //Smartphone mitteilen, dass die Gererierung abgeschlossen ist
+  if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
+        sendToClient(fixedValues.websocket_smartphoneID,SM_Audio_GenerationSuccess());
+  }
+  else
+  {
+      sendToClient(fixedValues.websocket_smartphoneID,SM_Audio_GenerationFailure('Timeout'));
+  }
+}
+
+// async function generateAudioRequestActions(message:string){
+//   let messageObj;
+//   try{
+//     messageObj = JSON.parse(message);
+//   }
+//   catch{sendToClient(fixedValues.websocket_spracherkennungID,'Fehlerhaft formatierte Nachricht');}
+//   let spracherkennungInitMessage = `{"type": "GENERATE_AUDIO_REQUEST","message": {"fileName":"Audio.m4a","text":"${messageObj.Text}"}}`;
+//   sendToClient(fixedValues.websocket_spracherkennungID,spracherkennungInitMessage);
+//   for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
+//              try{
+//                 const parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_spracherkennungID));
+//                 if(parsedjson.type == 'AUDIO_GENERATION_REQUEST_SUCCESS')
+//                 {
+//                   let smartphoneresponse = `{"type":"AUDIO_GENERATION_REQUEST_SUCCESS"}`;
+//                   sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+//                   return;
+//                 }
+//              }catch{}
+//             await sleep();
+//           }
+//           let smartphoneresponse = `{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"Timeout"}`
+//           sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
 // }

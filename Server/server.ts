@@ -62,12 +62,14 @@ app.use(express.static(path.join(__dirname, 'client')));
 app.use(session({secret: "sec",
   saveUninitialized: true,
   resave: true
-}))
+}));
 
 /**************
 *   Startup   *
 ***************/
 
+const filePath = path.join(__dirname, 'download', fixedValues.generierteAudio_dateiname);
+fixedValues.generierteAudio_pfad = filePath;
 StartBackgroudActions();
 
 /***********
@@ -92,14 +94,20 @@ app.post('/upload/sprache', upload_sprache.single('myfile'), async (req: Request
   voiceFileUploaded();
 });
 
+app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request, res: Response) => {
+  res.send('angekommen');
+  console.log(req.file);
+  faceFileUploaded();
+});
+
 app.get("/download/sprache", async (req: Request, res: Response) => {
-  const filePath = path.join(__dirname, 'download', fixedValues.generierteAudio_dateiname);
+  //const filePath = path.join(__dirname, 'download', fixedValues.generierteAudio_dateiname);
   res.setHeader('Content-Disposition', `attachment; filename="${fixedValues.generierteAudio_dateiname}"`);
   res.setHeader('Content-Type', 'audio/wav');
 
-  for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
+  for (let i = 0; i < fixedValues.TimeoutAudiogenerierungInSekunden; i++) {
     try{
-      if (fs.existsSync(filePath)) {
+      if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
         break;
       }
     }
@@ -107,7 +115,7 @@ app.get("/download/sprache", async (req: Request, res: Response) => {
     await sleep();
   }
 
-  if (!fs.existsSync(filePath)) {
+  if (!fs.existsSync(fixedValues.generierteAudio_pfad)) {
         sendToClient(fixedValues.websocket_smartphoneID,SM_Audio_GenerationFailure('Timeout'));
         res.status(404).send('File not Found. Timeout!');
   }
@@ -118,11 +126,6 @@ app.get("/download/sprache", async (req: Request, res: Response) => {
   }
 });
 
-app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request, res: Response) => {
-  res.send('angekommen');
-  console.log(req.file);
-  faceFileUploaded();
-});
 
 app.get("/api/calendar", async (req: Request, res: Response) => {
 

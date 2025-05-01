@@ -1,8 +1,17 @@
+01.05.2025 11:30 Uhr:
+Audio Gereration Workflow implementiert.
+
+Sendet das Smartphone: {"type":"AUDIO_GENERATION_REQUEST", "Text":"[Text]"},
+dann bekommt die Spracherkennung: {"type": "GENERATE_AUDIO_REQUEST","message": {"fileName":"audio.wav","text":"[Text]"}}
+
+Anschließend bekommt das Smartphone entweder:
+{"type":"AUDIO_GENERATION_REQUEST_SUCCESS"}
+oder
+{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"[Fehlermeldung]"}
 
 
 
-
-01.05.2025:
+01.05.2025 08:00 Uhr:
 Audio Download implementiert.
 
 Zum Download wird die Datei audio.wav im Ordner Server/download verwendet.

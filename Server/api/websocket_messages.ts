@@ -1,21 +1,26 @@
+import fixedValues from '../phandam_modules/config';
+
 /*****************
 *   Smartphone   *
 ******************/
 
 //Kown Patient
 export function SM_Face_KnownPatient(withAppointment:string):string{return `{"type":"Known_Customer", "Appointment":"${withAppointment}"}`;}
+//Debug: 0
 export function SM_Face_KnownPatient_WithAppointment():string{return SM_Face_KnownPatient("TRUE");}
+//Debug: 1
 export function SM_Face_KnownPatient_WithoutAppointment():string{return SM_Face_KnownPatient("FALSE");}
 
-//Unkown Patient
+//Unkown Patient (Debug: 2)
 export function SM_Face_UnknownPatient():string{return `{"type":"Unknown_Customer"}`;}
 
-//Smartphone Timeout
+//Smartphone Timeout (Debug: 3)
 export function SM_Face_Timeout():string{return `{"type":"Timeout"}`;}
 
-export function SM_Audio_GenerationFailure(fehlermeldung: string):string{
-    return `{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"${fehlermeldung}"}`;
-}
+//Smartphone Timeout (Debug: 4)
+export function SM_Audio_GenerationSuccess():string{return `{"type":"AUDIO_GENERATION_REQUEST_SUCCESS"}`;}
+//Smartphone Timeout (Debug: 5)
+export function SM_Audio_GenerationFailure(fehlermeldung: string):string{return `{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"${fehlermeldung}"}`;}
 
 // Für das Smartphone nicht wichtig, es bekommt nur eine With Appointment message, damit der Fall für das Smartphone abgeschlossen ist.
 //export function SM_Face_KnownPatient_WithShortlyAppointment(){}
@@ -29,7 +34,7 @@ export function SM_Audio_GenerationFailure(fehlermeldung: string):string{
 /**************
 *   Sprache   *
 ***************/
-
+export function SP_Audio_Genaration_Request(text:string):string{return `{"type":"GENERATE_AUDIO_REQUEST","message": {"fileName":"${fixedValues.generierteAudio_dateiname}","text":"${text}"}}`;}
 
 
 /**************
@@ -60,4 +65,6 @@ export function DriveToPickUpPatient():string{return '{"Type": "PICK_PATIENT"}';
 *   Export   *
 **************/
 
-export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient};
+//export default;
+
+export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure};
