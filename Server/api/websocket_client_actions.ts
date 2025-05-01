@@ -1,3 +1,4 @@
+// import express,{ Request, Response } from 'express';
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
 import fixedValues from '../phandam_modules/config';
 import { sleep } from '../phandam_modules/timing_utils';
@@ -190,3 +191,12 @@ export async function faceFileUploaded(){
     await sleep();
   }
 }
+
+// export function audioFileDownload(req:Request, res: Response):{filePath:string, res:Response}{
+//   const filePath = path.join(__dirname, 'download', fixedValues.generierteAudio_dateiname);
+//   res.setHeader('Content-Disposition', `attachment; filename="${fixedValues.generierteAudio_dateiname}"`);
+//   res.setHeader('Content-Type', 'audio/wav');
+//   // const fileStream = fs.createReadStream(filePath);
+//   // fileStream.pipe(res);
+//   return {filePath,res};
+// }

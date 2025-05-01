@@ -3,18 +3,17 @@ const bodyParser = require("body-parser");
 import express,{ Request, Response } from 'express';
 import multer,{ FileFilterCallback } from 'multer';
 import session from 'express-session';
+import fs from 'fs';
 import { sql_execute, sql_execute_write } from './phandam_modules/db_utils';
 import { convertDateToUString } from './phandam_modules/date_time_utils';
 import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
-import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions'
+import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions';
+// import {voiceFileUploaded, faceFileUploaded, audioFileDownload} from './api/websocket_client_actions';
 import './api/websocket';
 import {sendToClient, getLastMessage } from './api/websocket_modules';
 import {StartBackgroudActions} from './phandam_modules/backgroudTasks';
-// const multer = require('multer');
-// const mysql = require('mysql2');
-// import { QueryError } from 'mysql2';
-// const db_connection = require('./phandam_modules/dbConnect.js');
+import {SM_Audio_GenerationFailure} from './api/websocket_messages';
 
 
 const app = express();
@@ -93,6 +92,32 @@ app.post('/upload/sprache', upload_sprache.single('myfile'), async (req: Request
   voiceFileUploaded();
 });
 
+app.get("/download/sprache", async (req: Request, res: Response) => {
+  const filePath = path.join(__dirname, 'download', fixedValues.generierteAudio_dateiname);
+  res.setHeader('Content-Disposition', `attachment; filename="${fixedValues.generierteAudio_dateiname}"`);
+  res.setHeader('Content-Type', 'audio/wav');
+
+  for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
+    try{
+      if (fs.existsSync(filePath)) {
+        break;
+      }
+    }
+    catch(error){console.log(error);}
+    await sleep();
+  }
+
+  if (!fs.existsSync(filePath)) {
+        sendToClient(fixedValues.websocket_smartphoneID,SM_Audio_GenerationFailure('Timeout'));
+        res.status(404).send('File not Found. Timeout!');
+  }
+  else
+  {
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
+  }
+});
+
 app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request, res: Response) => {
   res.send('angekommen');
   console.log(req.file);
@@ -158,7 +183,7 @@ app.get("/api/client", (req: Request, res: Response) => {
           res.json({ date: fixedValues.NotUsedVariableString });
       }
   }
-})
+});
 
 app.post("/api/client", (req: Request, res: Response) => {
   //TODO: In Session Definition zu Nummber machen

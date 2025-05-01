@@ -1,0 +1,15 @@
+
+
+
+
+01.05.2025:
+Audio Download implementiert.
+
+Zum Download wird die Datei audio.wav im Ordner Server/download verwendet.
+Das Request mit dem dem Client geantwortet wird hat auch Header zur Bennenung der Audiodatei, die je nach persönlicher Vorliebe aber ignoriert werden können.
+
+Verwendung (über Curl):
+Audio download (Verwendung der Header im Request):
+curl -OJ http://localhost:3000/download/sprache
+Audio download (ohne Verwendung der Header im Request, dann funktioniert aber keine Fehlerbehandlung wie Timeouts):
+curl -O http://localhost:3000/download/sprache/audio.wav

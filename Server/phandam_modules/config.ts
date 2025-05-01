@@ -5,7 +5,7 @@ const fixedValues = {
     OeffnungszeitVon: 8,
     OeffnungszeitBis: 17,
     MaximaleVerspaetungsDauerInMinuten:10,
-    TimeoutSpracheInSekunden: 50,
+    TimeoutSpracheInSekunden: 5,
     TimeoutGesichtInSekunden: 50,
     TimeoutRoboterInSekunden: 5,
     websocket_smartphoneID: 'sm',
@@ -13,7 +13,8 @@ const fixedValues = {
     websocket_spracherkennungID: 'sp',
     websocket_RoboterID: 'ro',
     gesichtsdateien_speicherort: 'uploads/gesicht/', //Vom Server Root Ordner aus gesehen
-    sprachdateien_speicherort: 'uploads/sprache/' //Vom Server Root Ordner aus gesehen
+    sprachdateien_speicherort: 'uploads/sprache/', //Vom Server Root Ordner aus gesehen
+    generierteAudio_dateiname: 'audio.wav' //Vom Server Root Ordner aus gesehen
 }
 
 export default fixedValues;

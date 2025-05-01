@@ -13,6 +13,10 @@ export function SM_Face_UnknownPatient():string{return `{"type":"Unknown_Custome
 //Smartphone Timeout
 export function SM_Face_Timeout():string{return `{"type":"Timeout"}`;}
 
+export function SM_Audio_GenerationFailure(fehlermeldung: string):string{
+    return `{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"${fehlermeldung}"}`;
+}
+
 // Für das Smartphone nicht wichtig, es bekommt nur eine With Appointment message, damit der Fall für das Smartphone abgeschlossen ist.
 //export function SM_Face_KnownPatient_WithShortlyAppointment(){}
 
