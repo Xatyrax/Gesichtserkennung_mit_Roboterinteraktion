@@ -1,3 +1,13 @@
+03.05.2025:
+Patient nicht vorhanden Workflow:
+Bild Updload
+Server-->Gesicht: {"Type": "AVALIBLE"}
+Gesicht-->Server: {"type": "AVALIBLE_ANSWER", "answer":"FALSE"}
+Server-->Smartphone: {"type":"Unknown_Customer"}
+Smartphone Voice File Upload
+Spracherkennung-->Server: {"type": "EXTRACT_DATA_FROM_AUDIO_SUCCESS","message": {"text":{"sex":"M","lastname": "willis","firstname": "Bruce", "dateOfBirth":"01.02.1970", "phoneNumber":"12345 6789", "emailAddress":"example@whatever.com"}}}
+Server-->Gesicht: {"Type": "NEW", "ID":"[id]"}
+
 01.05.2025 11:30 Uhr:
 Audio Gereration Workflow implementiert.
 

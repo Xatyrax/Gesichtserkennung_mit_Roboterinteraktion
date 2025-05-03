@@ -22,20 +22,25 @@ export function SM_Audio_GenerationSuccess():string{return `{"type":"AUDIO_GENER
 //Smartphone Timeout (Debug: 5)
 export function SM_Audio_GenerationFailure(fehlermeldung: string):string{return `{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"${fehlermeldung}"}`;}
 
+export function SM_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
+
+export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","Success":"TRUE"}`;}
+
 // Für das Smartphone nicht wichtig, es bekommt nur eine With Appointment message, damit der Fall für das Smartphone abgeschlossen ist.
 //export function SM_Face_KnownPatient_WithShortlyAppointment(){}
 
 /**************
 *   Gesicht   *
 ***************/
-
+export function GE_Does_Face_Exist():string{return `{"Type": "AVALIBLE"}`;}
+export function GE_New_Patient(id:number):string{return `{"Type": "NEW", "ID":"${String(id)}"}`;}
 
 
 /**************
 *   Sprache   *
 ***************/
 export function SP_Audio_Genaration_Request(text:string):string{return `{"type":"GENERATE_AUDIO_REQUEST","message": {"fileName":"${fixedValues.generierteAudio_dateiname}","text":"${text}"}}`;}
-
+export function SP_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
 
 /**************
 *   Roboter   *
@@ -67,4 +72,4 @@ export function DriveToPickUpPatient():string{return '{"Type": "PICK_PATIENT"}';
 
 //export default;
 
-export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure};
+export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient};

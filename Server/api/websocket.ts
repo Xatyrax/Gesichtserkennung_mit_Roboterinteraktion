@@ -16,7 +16,7 @@ wss.on('connection', (ws:WebSocket) => {
     ws.on('message', (message:string) => {
 
         //Debug
-        console.log(`Received: ${message}`);
+        //console.log(`Received: ${message}`);
         //ws.send(`Echo: ${message}`);
 
         //Prüfen ob der Client sich als Smartphone identifiziert

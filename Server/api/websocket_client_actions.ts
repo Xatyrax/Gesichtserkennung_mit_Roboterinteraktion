@@ -1,9 +1,11 @@
 // import express,{ Request, Response } from 'express';
 import fs from 'fs';
+import { sql_execute, sql_execute_write } from '../phandam_modules/db_utils';
+import {waitForMessage } from './websocket_common_actions';
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
 import fixedValues from '../phandam_modules/config';
 import { sleep } from '../phandam_modules/timing_utils';
-import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure} from './websocket_messages';
+import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient} from './websocket_messages';
 
 
 
@@ -77,7 +79,7 @@ export async function InitActions(message:string){
 }
 
 export async function voiceFileUploaded(){
-  sendToClient(fixedValues.websocket_spracherkennungID,'Bild hochgeladen. Erwarte Nachricht...');
+  sendToClient(fixedValues.websocket_spracherkennungID,'Sprachdatei hochgeladen. Erwarte Nachricht...');
   for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
     try{
       const parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_spracherkennungID));
@@ -106,73 +108,146 @@ export async function voiceFileUploaded(){
 }
 
 export async function faceFileUploaded(){
-  sendToClient(fixedValues.websocket_gesichtserkennungID,'{"Type": "AVALIBLE"}');
-  for (let i = 0; i < fixedValues.TimeoutGesichtInSekunden; i++) {
-    try{
-      // let unparsed = getLastMessage(fixedValues.websocket_gesichtserkennungID);
-      // let parsedjson = JSON.parse('{}');
-      // if(unparsed !== fixedValues.NotUsedVariableString){
-      //   parsedjson = JSON.parse(unparsed);
-      let parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_gesichtserkennungID));
-      // }
-      //TODO: to Lower
-      if(parsedjson.type == 'AVALIBLE_ANSWER')
-      {
-        let Answer = parsedjson.answer;
-        let BildID = parsedjson.bild_id;
-        //Debug
-        // sendToClient(fixedValues.websocket_gesichtserkennungID,`{"Answer":"${Answer}"; "BildID":"${BildID}"}`);
+  //Gesicht bekannt?
+  sendToClient(fixedValues.websocket_gesichtserkennungID,GE_Does_Face_Exist());
+  sendToClient(fixedValues.websocket_gesichtserkennungID,'start wait');
 
-        //Patient erkannt
-        if(Answer == 'TRUE')
-        {
-          //TODO: Appointment abfragen
-          let Appointment = 'TRUE';
+  let Face_Exists_Response:(any | null) = await waitForMessage(fixedValues.websocket_gesichtserkennungID,fixedValues.TimeoutGesichtInSekunden);
+  sendToClient(fixedValues.websocket_gesichtserkennungID,'finsh wait');
 
-          //Patient hat Termin
-          if(Appointment == 'TRUE')
-          {
-            sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
-            sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
-            for (let i = 0; i < fixedValues.TimeoutRoboterInSekunden; i++) {
-              //TODO: JSON abfrage auslagern
-              try{
-                  let message_walle = JSON.parse(getLastMessage(fixedValues.websocket_RoboterID));
-                  if(message_walle.Type == 'DRIVE_TO_ROOM_ANSWER')
-                  {
-                    if(message_walle.Answer == 'TRUE')
-                    {
-                      return;
-                    }
-                    else
-                    {
-                      //TODO: Fehler
-                    }
-                  }
-              }
+  if(Face_Exists_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Face_Timeout());return;}
+  sendToClient(fixedValues.websocket_gesichtserkennungID,'end wait');
 
-              catch
-              {}
-              await sleep();
-            }
-          }
-          //Patient hat keinen Termin
-          else
-          {
-            sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
-          }
-        }
-        else if(Answer == 'FALSE')
-        {
-          sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
-        }
-        sendToClient(fixedValues.websocket_smartphoneID,`{"Answer":"Patient vorhanden"; "Patientendaten":"Daten"}`);
-        return;
-      }
-    }catch{}
-    await sleep();
+  if(Face_Exists_Response.type != 'AVALIBLE_ANSWER'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
+
+  if(Face_Exists_Response.answer == 'FALSE'){
+      sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
+      PatientAnlegen();
   }
 }
+
+//TODO: Wird das auch für die Terminverwaltung gebraucht? --> dann auslagern
+async function PatientAnlegen(){
+  console.log('Patienten anlegen');
+  let Spracherkennung_NewPatient:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutPatientAnlegen);
+  if(Spracherkennung_NewPatient == null){
+      sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('keine Antwort von der Spracherkennung'));
+      sendToClient(fixedValues.websocket_spracherkennungID,SP_Failure('Timeout! Es wurde auf Patientendaten von dir gewartet.'))
+      return;
+  }
+  console.log('Nachricht erhalten');
+  console.log(Spracherkennung_NewPatient);
+  if(Spracherkennung_NewPatient.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
+  {
+
+      sendToClient(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Success());
+      let geschlecht:string|null = Spracherkennung_NewPatient.message.text.sex;
+      let vorname:string = Spracherkennung_NewPatient.message.text.firstname;
+      let nachname:string = Spracherkennung_NewPatient.message.text.lastname;
+      let gebrutsdatum:Date = new Date(Spracherkennung_NewPatient.message.text.dateOfBirth);
+      let tel:string|null = Spracherkennung_NewPatient.message.text.phoneNumber;
+      let email:string|null = Spracherkennung_NewPatient.message.text.emailAddress;
+
+      //TODO: Pflichtfelder = null
+      //TODO: Check Date Format and change it
+      let sql_command = `INSERT INTO Patients (Sex,Firstname, Lastname, Birthday,Phone,Mail) VALUES (?,?,?,?,?,?)`;
+      let sql_data = [geschlecht??null,vorname,nachname,gebrutsdatum,tel??null,email??null]
+      sql_execute_write(sql_command,sql_data);
+
+      let highest_ID_Command = 'Select MAX(PatientID) From Patients';
+      let highest_ID:any = await sql_execute(highest_ID_Command);
+
+      sendToClient(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(Number(highest_ID[0])));
+      console.log(highest_ID[0]);
+  }
+}
+
+
+// export async function faceFileUploaded(){
+
+
+// let Face_Exists_Response:JSON = waitForMessage(fixedValues.websocket_gesichtserkennungID,GE_Does_Face_Exist(),fixedValues.TimeoutGesichtInSekunden);
+//   //Timeout
+//   if (Face_Exists_Response == null){
+//       sendToClient(fixedValues.websocket_smartphoneID,SM_Face_Timeout());
+//       return
+//   }
+//   else
+//   {
+//
+//
+//     //Kunde hat Termin
+//     let Has_Appointment:(JSON | null) = waitForMessage(getLastMessage(fixedValues.websocket_gesichtserkennungID),fixedValues.TimeoutGesichtInSekunden);
+//   }
+
+
+//   sendToClient(fixedValues.websocket_gesichtserkennungID,'{"Type": "AVALIBLE"}');
+//   for (let i = 0; i < fixedValues.TimeoutGesichtInSekunden; i++) {
+//     try{
+//       // let unparsed = getLastMessage(fixedValues.websocket_gesichtserkennungID);
+//       // let parsedjson = JSON.parse('{}');
+//       // if(unparsed !== fixedValues.NotUsedVariableString){
+//       //   parsedjson = JSON.parse(unparsed);
+//       let parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_gesichtserkennungID));
+//       // }
+//       //TODO: to Lower
+//       if(parsedjson.type == 'AVALIBLE_ANSWER')
+//       {
+//         let Answer = parsedjson.answer;
+//         let BildID = parsedjson.bild_id;
+//         //Debug
+//         // sendToClient(fixedValues.websocket_gesichtserkennungID,`{"Answer":"${Answer}"; "BildID":"${BildID}"}`);
+//
+//         //Patient erkannt
+//         if(Answer == 'TRUE')
+//         {
+//           //TODO: Appointment abfragen
+//           let Appointment = 'TRUE';
+//
+//           //Patient hat Termin
+//           if(Appointment == 'TRUE')
+//           {
+//             sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
+//             sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
+//             for (let i = 0; i < fixedValues.TimeoutRoboterInSekunden; i++) {
+//               //TODO: JSON abfrage auslagern
+//               try{
+//                   let message_walle = JSON.parse(getLastMessage(fixedValues.websocket_RoboterID));
+//                   if(message_walle.Type == 'DRIVE_TO_ROOM_ANSWER')
+//                   {
+//                     if(message_walle.Answer == 'TRUE')
+//                     {
+//                       return;
+//                     }
+//                     else
+//                     {
+//                       //TODO: Fehler
+//                     }
+//                   }
+//               }
+//
+//               catch
+//               {}
+//               await sleep();
+//             }
+//           }
+//           //Patient hat keinen Termin
+//           else
+//           {
+//             sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
+//           }
+//         }
+//         else if(Answer == 'FALSE')
+//         {
+//           sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
+//         }
+//         sendToClient(fixedValues.websocket_smartphoneID,`{"Answer":"Patient vorhanden"; "Patientendaten":"Daten"}`);
+//         return;
+//       }
+//     }catch{}
+//     await sleep();
+//   }
+// }
 
 export async function AudioGeneration(text:string){
 

@@ -17,7 +17,7 @@ export function sendToClient(id:string, data:string) {
 }
 
 export function getLastMessage(id:string):string {
-    let message = clients_lastmessage.get(fixedValues.websocket_spracherkennungID);
+    let message = clients_lastmessage.get(id);
     let ret = fixedValues.NotUsedVariableString;
     if(message){
         ret = message;
