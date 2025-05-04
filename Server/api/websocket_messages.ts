@@ -26,6 +26,9 @@ export function SM_Failure(errorMessage:string):string{return `{"type":"FAILURE"
 
 export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","Success":"TRUE"}`;}
 
+export function SM_NextAppointment_Response(date:string,time:string,weekday:string):string{return `{"Date":"${date}", "Time":"${time}", "Weekday":"${weekday}"}`;}
+
+
 // Für das Smartphone nicht wichtig, es bekommt nur eine With Appointment message, damit der Fall für das Smartphone abgeschlossen ist.
 //export function SM_Face_KnownPatient_WithShortlyAppointment(){}
 
@@ -72,4 +75,4 @@ export function DriveToPickUpPatient():string{return '{"Type": "PICK_PATIENT"}';
 
 //export default;
 
-export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient};
+export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response};

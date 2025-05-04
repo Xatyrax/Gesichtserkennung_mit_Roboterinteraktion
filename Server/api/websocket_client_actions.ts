@@ -5,7 +5,10 @@ import {waitForMessage } from './websocket_common_actions';
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
 import fixedValues from '../phandam_modules/config';
 import { sleep } from '../phandam_modules/timing_utils';
-import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient} from './websocket_messages';
+import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform } from '../phandam_modules/date_time_utils';
+import { getNextAppointment } from '../phandam_functions/appointment_functions';
+// import { sleep } from '../phandam_functions/room_fuctions';
+import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response} from './websocket_messages';
 
 
 
@@ -110,13 +113,9 @@ export async function voiceFileUploaded(){
 export async function faceFileUploaded(){
   //Gesicht bekannt?
   sendToClient(fixedValues.websocket_gesichtserkennungID,GE_Does_Face_Exist());
-  sendToClient(fixedValues.websocket_gesichtserkennungID,'start wait');
 
   let Face_Exists_Response:(any | null) = await waitForMessage(fixedValues.websocket_gesichtserkennungID,fixedValues.TimeoutGesichtInSekunden);
-  sendToClient(fixedValues.websocket_gesichtserkennungID,'finsh wait');
-
   if(Face_Exists_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Face_Timeout());return;}
-  sendToClient(fixedValues.websocket_gesichtserkennungID,'end wait');
 
   if(Face_Exists_Response.type != 'AVALIBLE_ANSWER'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
 
@@ -124,12 +123,47 @@ export async function faceFileUploaded(){
       sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
       PatientAnlegen();
   }
+  if(Face_Exists_Response.answer == 'TRUE'){
+    try{Number(Face_Exists_Response.bild_id)}catch{console.log("Gesichtserkennung hat keine gültige ID zurückgegeben"); return;}
+    try{
+      if(await HasAppointment(Face_Exists_Response.bild_id) == true)
+      {
+        sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
+        //TODO: Prüfen welches Zimmer frei ist und an Roboter senden
+      }
+      else
+      {
+        sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
+        while(true)
+        {
+            let Next_Appointment_Request:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
+            if(Next_Appointment_Request == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure("Smartphone Timeout! nextAppointment Request wurde erwartet."));return;}
+            let nextAppointment:Date = await getNextAppointment();
+            let date:string = convertDateToSmartphoneDate(nextAppointment);
+            let time:string = convertDateToSmartphoneTime(nextAppointment);
+            let weekday:string = convertDateToWeekdayShortform(nextAppointment);
+            sendToClient(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
+            let Next_Appointment_Response:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
+            if(Next_Appointment_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure("Smartphone Timeout! nextAppointment Response wurde erwartet."));return;}
+            if(Next_Appointment_Response.message == 'TRUE')
+            {
+              let nextAppointmentEnd = nextAppointment.setMinutes(nextAppointment.getMinutes() + fixedValues.TermindauerInMinuten)
+              let data = [convertDateToUString(nextAppointment), convertDateToUString(nextAppointment), Face_Exists_Response.bild_id];
+              let sqlcommand = "INSERT INTO Appointments (Start, End, PatientID) VALUES (?,?,?)";
+              sql_execute_write(sqlcommand,data);
+              break;
+            }
+        }
+      }
+    }
+    catch(error){console.log(`Fehler bei Terminabfrage. Fehlermeldung: ${error}`); return;}
+  }
 }
 
 //TODO: Wird das auch für die Terminverwaltung gebraucht? --> dann auslagern
 async function PatientAnlegen(){
   console.log('Patienten anlegen');
-  let Spracherkennung_NewPatient:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutPatientAnlegen);
+  let Spracherkennung_NewPatient:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutPatient);
   if(Spracherkennung_NewPatient == null){
       sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('keine Antwort von der Spracherkennung'));
       sendToClient(fixedValues.websocket_spracherkennungID,SP_Failure('Timeout! Es wurde auf Patientendaten von dir gewartet.'))
@@ -162,6 +196,31 @@ async function PatientAnlegen(){
   }
 }
 
+async function HasAppointment(bild_id:number):Promise<Boolean>{
+    return new Promise(async (resolve, reject) => {
+    console.log('Abfrage ob Termin vorhanden');
+    //TODO:Termin prüfen
+    //ID von Gesichtserkennung abfragen
+
+    let now:Date = new Date();
+    //TODO:Time Overflow?
+    let maxFrüh:Date = now;
+    maxFrüh.setMinutes(now.getMinutes() - fixedValues.MaximaleVerfruehungsDauerInMinuten);
+    let maxSpät:Date = now;
+    maxSpät.setMinutes(now.getMinutes() + fixedValues.MaximaleVerspaetungsDauerInMinuten);
+
+    let Termine:any;
+    try{
+    let getAppoinmentsCommand = `Select AppointmentID From Appointments WHERE PatientID = ${bild_id} AND Start > '${convertDateToUString(maxFrüh)}' AND Start < '${convertDateToUString(maxSpät)}'`;
+    Termine = await sql_execute(getAppoinmentsCommand);
+    } catch(error){console.log(`ID kann nicht zugeordnet werden. Fehler: ${error}`);reject(error);}
+
+    if(Termine.length > 0)
+      resolve(true);
+    else
+      resolve(false);
+    });
+}
 
 // export async function faceFileUploaded(){
 

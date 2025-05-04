@@ -85,14 +85,16 @@ const db = require('./phandam_modules/dbConnect.js');
     });
 
     let personData = [
-            ['Max', 'Mustermann', '1990-02-01T00:00'],
-            ['Isaac', 'Asimov', '1999-10-18T00:00'],
-            ['Christopher', 'Paolini', '2001-11-21T00:00']
+            ['M','Max', 'Mustermann', '1990-02-01T00:00','123 456','mail@mail.com'],
+            ['M','Isaac', 'Asimov', '1999-10-18T00:00','123 456','isaac@mail.com'],
+            ['M','Christopher', 'Paolini', '2001-11-21T00:00','123 456','mail@paolini.com'],
+            ['W','Ulrike', 'Mayer', '1968-06-13T00:00','0831 563450','UlrikeMayer@gmail.com'],
+            ['M','Sebastian', 'Fitzek', '2000-12-30T00:00','0176 234890345','SebastianFitzek@gmail.com']
             // ['Alexey', 'Pehov', '1963-09-30T00:00']
         ];
 
         let sqlInsertPatient = `INSERT INTO Patients
-            (Firstname, Lastname, Birthday)
+            (Sex, Firstname, Lastname, Birthday,Phone,Mail)
             VALUES ?`;
 
         db.query(sqlInsertPatient, [personData], (err, result) => {
@@ -103,10 +105,10 @@ const db = require('./phandam_modules/dbConnect.js');
         });
 
         let termineData = [
-            ['2025-04-25T10:00', '2025-04-25T10:30', '1'],
-            ['2025-04-26T11:00', '2025-04-26T11:30', '2'],
-            ['2025-04-27T12:00', '2025-04-27T12:30', '3'],
-            ['2025-04-25T10:30', '2025-04-25T11:00', '2']
+            ['2025-05-07T08:15', '2025-05-07T08:30', '4'],
+            ['2025-05-08T15:20', '2025-05-08T16:00', '5'],
+            ['2025-05-10T12:00', '2025-05-10T12:30', '1'],
+            ['2025-05-11T10:30', '2025-05-11T11:00', '2']
             // ['2025-04-24T09:00', '2025-04-24T09:30', '4']
         ];
 
