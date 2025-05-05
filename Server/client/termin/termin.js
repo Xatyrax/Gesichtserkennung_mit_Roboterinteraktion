@@ -3,7 +3,21 @@ document.addEventListener("DOMContentLoaded", async function () {
 let response = await fetch('/api/client');
 let data = await response.json();
 
-                if(data.eventid)
+                if(data.userInputError)
+                {
+                    document.getElementById("fehler").textContent = data.userInputError.message;
+                    document.getElementById("eventid").value = data.userInputError.InputedData.eventid;
+                    document.getElementById("date").textContent = data.userInputError.InputedData.date;
+                    document.getElementById("startuhrzeit").value = data.userInputError.InputedData.starttime;
+                    document.getElementById("enduhrzeit").value = data.userInputError.InputedData.endtime;
+                    document.getElementById("geschlecht").value = data.userInputError.InputedData.sex;
+                    document.getElementById("vorname").value = data.userInputError.InputedData.firstname;
+                    document.getElementById("nachname").value = data.userInputError.InputedData.lastname;
+                    document.getElementById("geburtsdatum").value = data.userInputError.InputedData.birthday.substring(0, 10);
+                    document.getElementById("telefon").value = data.userInputError.InputedData.phone;
+                    document.getElementById("mail").value = data.userInputError.InputedData.mail;
+                }
+                else if(data.eventid)
                 {
                     try{
                     let eventresponse = await fetch('/api/event');

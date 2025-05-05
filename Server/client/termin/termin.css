@@ -31,3 +31,7 @@ h1{color: white; text-align: center;}
 .eingabe{
     margin-bottom: 50px;
 }
+.error{
+            color: red;
+            font-weight:bold;
+        }

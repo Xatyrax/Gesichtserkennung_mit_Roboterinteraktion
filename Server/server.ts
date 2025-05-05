@@ -14,6 +14,7 @@ import './api/websocket';
 import {sendToClient, getLastMessage } from './api/websocket_modules';
 import {StartBackgroudActions} from './phandam_modules/backgroudTasks';
 import {SM_Audio_GenerationFailure} from './api/websocket_messages';
+import { validateUserInputs } from './phandam_functions/client_errorhandling';
 
 
 const app = express();
@@ -173,7 +174,128 @@ app.post("/api/calendar", async (req: Request, res: Response) => {
   }
 });
 
+
+
+app.get("/api/event", async (req: Request, res: Response) => {
+
+  //TODO: leere ID abfangen
+  let eventid = req.session.eventid;
+  let termindaten = JSON.parse('{}'); //Um Typescript zu zeigen, dass es um ein JSON Object und nicht um einen String geht
+  termindaten = await sql_execute(`Select A.Start, A.End, P.Sex, P.Firstname, P.Lastname, P.Birthday, P.Phone,P.Mail From Appointments AS A JOIN Patients AS P ON A.PatientID = P.PatientID Where A.AppointmentID = ${eventid}`);
+
+  res.json({error:'FALSE',date: convertDateToUString(termindaten[0].Start), start: termindaten[0].Start,  ende: termindaten[0].End,  geschlecht: termindaten[0].Sex,  vorname: termindaten[0].Firstname,  nachname: termindaten[0].Lastname,  geburtstag: convertDateToUString(termindaten[0].Birthday),  telefon: termindaten[0].Phone,  mail: termindaten[0].Mail});
+})
+
+app.post("/api/event", async (req: Request, res: Response) => {
+
+  let eventid:number|null = req.body.eventid == '' ? null : req.body.eventid;
+
+  if(req.body.delete == 'true')
+  {
+    //TODO: letztes Patientenvorkommen? --> Patienten werden nicht gelöscht?
+    if(eventid)
+    {
+        let data = [eventid];
+        let command = "Delete from Appointments Where AppointmentID = ?";
+        sql_execute_write(command,data);
+    }
+
+    res.redirect("/");
+    return;
+  }
+  //Date
+  //TODO:Datentypen
+
+  let date = req.body.date;
+  let starttime = req.body.starttime;
+  let endtime = req.body.endtime;
+  let sex:string|null = req.body.sex == '' ? null : req.body.sex;
+  let firstname = req.body.firstname;
+  let lastname = req.body.lastname;
+  let birthday:Date = new Date(req.body.birthday);
+  let phone:string|null = req.body.phone == '' ? null : req.body.phone;
+  let mail:string|null = req.body.mail == '' ? null : req.body.mail;
+
+  let startdatetime = new Date(date + " " + starttime + ":00");
+  let enddatetime = new Date(date + " " + endtime + ":00");
+
+  let InputErrorMessage = validateUserInputs(startdatetime,enddatetime,sex,firstname,lastname,birthday?birthday:new Date(),phone,mail);
+
+  //TODO: Conversion Function?
+  let birthdayString = String(birthday) == 'Invalid Date'?'':convertDateToUString(birthday);
+  if(birthdayString=='')
+  {
+    birthday = new Date();
+    birthday.setDate(birthday.getDate() + 1);
+  }
+
+  if(InputErrorMessage != null)
+  {
+    req.session.userInputError = JSON.parse(`{"message":"${InputErrorMessage}","InputedData":{"eventid":"${eventid?eventid:''}","date":"${req.session.date}",  "starttime":"${starttime}", "endtime":"${endtime}", "sex":"${sex?sex:''}","firstname":"${firstname}","lastname":"${lastname}","birthday":"${birthdayString}","phone":"${phone?phone:''}","mail":"${mail?mail:''}"}}`);
+    res.redirect("/termin");
+    return;
+  }
+
+  let BdaySqlString:string = birthdayString==''?convertDateToUString(birthday):convertDateToUString(birthday);
+  BdaySqlString=convertDateToUString(birthday);
+
+  let Patientendaten:any = await sql_execute(`Select PatientID, Firstname, Lastname, Sex, Birthday, Phone, Mail From Patients Where Firstname = '${firstname}' AND Lastname = '${lastname}' AND Birthday = '${BdaySqlString}'`);
+
+  let PatientID:number|null = null;
+
+  if(Patientendaten[0])
+  {
+    PatientID = Patientendaten[0].PatientID;
+  }
+  else
+  {
+    req.session.userInputError = JSON.parse(`{"message":"Patient nicht in DB","InputedData":{"eventid":"${eventid?eventid:''}","date":"${req.session.date}",  "starttime":"${starttime}", "endtime":"${endtime}", "sex":"${sex?sex:''}","firstname":"${firstname}","lastname":"${lastname}","birthday":"${birthdayString}","phone":"${phone?phone:''}","mail":"${mail?mail:''}"}}`);
+    res.redirect("/termin");
+    return;
+    //Hier wird nichts angelegt. Patienen werden nur mit Gesicht angelegt und können hier maximal geändert werden
+  }
+
+  //Patient vorhanden?
+  if(PatientID != null)
+  {
+    //Patientendaten geändert?
+    if(Patientendaten[0].Sex != sex
+      || Patientendaten[0].Phone != phone
+      || Patientendaten[0].Mail != mail)
+    {
+      let Updatedata = [sex??null, phone??null, mail??null, PatientID];
+      let Updatesqlcommand = "Update Patients set Sex = ?, Phone = ?, Mail = ?  Where PatientID = ?";
+      sql_execute_write(Updatesqlcommand,Updatedata);
+    }
+
+    //Vorhandener oder neuer Termin
+    if(eventid)
+    {
+      let data = [startdatetime, enddatetime, PatientID, eventid];
+      let sqlcommand = "Update Appointments set Start = ?, End = ?, PatientID = ? Where AppointmentID = ?";
+      sql_execute_write(sqlcommand,data);
+    }
+    else
+    {
+      let data = [startdatetime, enddatetime, PatientID];
+      let sqlcommand = "INSERT INTO Appointments (Start, End, PatientID) VALUES (?,?,?)";
+      sql_execute_write(sqlcommand,data);
+    }
+  }
+
+  res.redirect("/");
+});
+
 app.get("/api/client", (req: Request, res: Response) => {
+  if(req.session.userInputError != null)
+  {
+    let message = req.session.userInputError.message;
+    let InputedData = req.session.userInputError.InputedData;
+    req.session.userInputError = null;
+    res.json({userInputError:{message:message,InputedData:InputedData}});
+    return;
+  }
+
   if(req.session.eventid)
   {
     res.json({ eventid: req.session.eventid});
@@ -189,6 +311,8 @@ app.get("/api/client", (req: Request, res: Response) => {
 });
 
 app.post("/api/client", (req: Request, res: Response) => {
+
+  //res.redirect("/termin");
   //TODO: In Session Definition zu Nummber machen
   let eventid = req.body.id;
   let date = req.body.date;
@@ -230,95 +354,6 @@ app.post("/api/client", (req: Request, res: Response) => {
   }
 
     res.redirect("/termin");
-})
-
-app.get("/api/event", async (req: Request, res: Response) => {
-  //TODO: leere ID abfangen
-  let eventid = req.session.eventid;
-  let termindaten = JSON.parse('{}'); //Um Typescript zu zeigen, dass es um ein JSON Object und nicht um einen String geht
-  termindaten = await sql_execute(`Select A.Start, A.End, P.Sex, P.Firstname, P.Lastname, P.Birthday, P.Phone,P.Mail From Appointments AS A JOIN Patients AS P ON A.PatientID = P.PatientID Where A.AppointmentID = ${eventid}`);
-
-  res.json({date: convertDateToUString(termindaten[0].Start), start: termindaten[0].Start,  ende: termindaten[0].End,  geschlecht: termindaten[0].Sex,  vorname: termindaten[0].Firstname,  nachname: termindaten[0].Lastname,  geburtstag: convertDateToUString(termindaten[0].Birthday),  telefon: termindaten[0].Phone,  mail: termindaten[0].Mail});
-})
-
-app.post("/api/event", async (req: Request, res: Response) => {
-
-  let eventid:number|null = req.body.eventid == '' ? null : req.body.eventid;
-
-  if(req.body.delete == 'true')
-  {
-    //TODO: letztes Patientenvorkommen? --> Patienten werden nicht gelöscht?
-    if(eventid)
-    {
-        let data = [eventid];
-        let command = "Delete from Appointments Where AppointmentID = ?";
-        sql_execute_write(command,data);
-    }
-
-    res.redirect("/");
-    return;
-  }
-  //Date
-  //TODO:Datentypen
-
-  let date = req.body.date;
-  let starttime = req.body.starttime;
-  let endtime = req.body.endtime;
-  let sex:string|null = req.body.sex == '' ? null : req.body.sex;
-  let firstname = req.body.firstname;
-  let lastname = req.body.lastname;
-  let birthday:Date = new Date(req.body.birthday);
-  let phone:string|null = req.body.phone == '' ? null : req.body.phone;
-  let mail:string|null = req.body.mail == '' ? null : req.body.mail;
-
-  //TODO: Conversion Function?
-  let BdaySqlString:string = convertDateToUString(birthday);
-  let startdatetime = new Date(date + " " + starttime + ":00");
-  let enddatetime = new Date(date + " " + endtime + ":00");
-
-  let Patientendaten:any = await sql_execute(`Select PatientID, Firstname, Lastname, Sex, Birthday, Phone, Mail From Patients Where Firstname = '${firstname}' AND Lastname = '${lastname}' AND Birthday = '${BdaySqlString}'`);
-
-  let PatientID:number|null = null;
-
-  if(Patientendaten[0])
-  {
-    PatientID = Patientendaten[0].PatientID;
-  }
-
-  //Patient vorhanden?
-  if(PatientID != null)
-  {
-    //Patientendaten geändert?
-    if(Patientendaten[0].Sex != sex
-      || Patientendaten[0].Phone != phone
-      || Patientendaten[0].Mail != mail)
-    {
-      let Updatedata = [sex??null, phone??null, mail??null, PatientID];
-      let Updatesqlcommand = "Update Patients set Sex = ?, Phone = ?, Mail = ?  Where PatientID = ?";
-      sql_execute_write(Updatesqlcommand,Updatedata);
-    }
-
-    //Vorhandener oder neuer Termin
-    if(eventid)
-    {
-      let data = [startdatetime, enddatetime, PatientID, eventid];
-      let sqlcommand = "Update Appointments set Start = ?, End = ?, PatientID = ? Where AppointmentID = ?";
-      sql_execute_write(sqlcommand,data);
-    }
-    else
-    {
-      let data = [startdatetime, enddatetime, PatientID];
-      let sqlcommand = "INSERT INTO Appointments (Start, End, PatientID) VALUES (?,?,?)";
-      sql_execute_write(sqlcommand,data);
-    }
-  }
-  else{
-    console.log('Patient nicht gefunden. Neu anlegen nur über Smartphone.')
-    //TODO:Hier wird nichts angelegt. Patienen werden nur mit Gesicht angelegt und können hier maximal geändert werden
-    // --> Error
-  }
-
-  res.redirect("/");
 });
 
 app.listen(PORT, '0.0.0.0', () => {
