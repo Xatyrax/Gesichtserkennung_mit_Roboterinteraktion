@@ -162,15 +162,12 @@ export async function faceFileUploaded(){
 
 //TODO: Wird das auch für die Terminverwaltung gebraucht? --> dann auslagern
 async function PatientAnlegen(){
-  console.log('Patienten anlegen');
   let Spracherkennung_NewPatient:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutPatient);
   if(Spracherkennung_NewPatient == null){
       sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('keine Antwort von der Spracherkennung'));
       sendToClient(fixedValues.websocket_spracherkennungID,SP_Failure('Timeout! Es wurde auf Patientendaten von dir gewartet.'))
       return;
   }
-  console.log('Nachricht erhalten');
-  console.log(Spracherkennung_NewPatient);
   if(Spracherkennung_NewPatient.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
   {
 
@@ -178,7 +175,18 @@ async function PatientAnlegen(){
       let geschlecht:string|null = Spracherkennung_NewPatient.message.text.sex;
       let vorname:string = Spracherkennung_NewPatient.message.text.firstname;
       let nachname:string = Spracherkennung_NewPatient.message.text.lastname;
-      let gebrutsdatum:Date = new Date(Spracherkennung_NewPatient.message.text.dateOfBirth);
+      //TODO:Fehlererkennung
+      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth);
+      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(0,1));
+      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(0,2));
+      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(0,4));
+      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(0,10));
+      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(5,7));
+      let gebYear=(Spracherkennung_NewPatient.message.text.dateOfBirth).substring(0,4);
+      let gebMonth=(Spracherkennung_NewPatient.message.text.dateOfBirth).substring(5,7);
+      let gebDay=(Spracherkennung_NewPatient.message.text.dateOfBirth).substring(8,10);
+      let gebDate = new Date(gebYear,gebMonth-1,gebDay,12,0,0);
+      let gebrutsdatum:Date = gebDate;
       let tel:string|null = Spracherkennung_NewPatient.message.text.phoneNumber;
       let email:string|null = Spracherkennung_NewPatient.message.text.emailAddress;
 
@@ -188,11 +196,10 @@ async function PatientAnlegen(){
       let sql_data = [geschlecht??null,vorname,nachname,gebrutsdatum,tel??null,email??null]
       sql_execute_write(sql_command,sql_data);
 
-      let highest_ID_Command = 'Select MAX(PatientID) From Patients';
+      let highest_ID_Command = 'Select MAX(PatientID) as pID From Patients';
       let highest_ID:any = await sql_execute(highest_ID_Command);
 
-      sendToClient(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(Number(highest_ID[0])));
-      console.log(highest_ID[0]);
+      sendToClient(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(Number(highest_ID[0].pID)));
   }
 }
 
