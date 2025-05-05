@@ -15,6 +15,11 @@ return new Promise(async (resolve, reject) => {
           resolve(parsedjson);
           break;
       }
+      else if(parsedjson.face_result != null)
+      {
+          resolve(parsedjson);
+          break;
+      }
     }catch{}
     await sleep();
   }
