@@ -131,6 +131,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 form.submit();
             }
 
+            function rooms(){
+                window.location.href = "../rooms";
+            }
+
             function forward(){
                 const form = document.createElement('form');
                 form.method = "POST";

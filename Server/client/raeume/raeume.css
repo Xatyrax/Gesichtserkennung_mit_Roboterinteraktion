@@ -1,0 +1,12 @@
+body {
+    height: 100%;
+    background-color: #1B4F72;
+    margin: 0;
+    padding: 0;
+}
+
+h1{color: white; text-align: center;}
+
+.hidden{
+    display:none
+}

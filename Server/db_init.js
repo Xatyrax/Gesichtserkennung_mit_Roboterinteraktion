@@ -73,16 +73,36 @@ const db = require('./phandam_modules/dbConnect.js');
         console.log('Termine Tabelle erstellt');
     });
 
-    let createBehandlungsräumeTableQuery = `CREATE TABLE Behandlungsräume (
-            BehandlungsraumID INT AUTO_INCREMENT PRIMARY KEY,
+    let createBehandlungsräumeTableQuery = `CREATE TABLE Rooms (
+            RoomID INT AUTO_INCREMENT PRIMARY KEY,
+            RoomName VARCHAR(255) NOT NULL,
             Free BIT NOT NULL
         );`;
     db.query(createBehandlungsräumeTableQuery, (err, result) => {
         if (err) {
             throw err;
         }
-        console.log('Behandlungsräume Tabelle erstellt');
+        console.log('Rooms Tabelle erstellt');
     });
+
+    let roomData = [
+            ['Behandlungsraum 1',1],
+            ['Behandlungsraum 2',1],
+            ['Behandlungsraum 3',1]
+            // ['Alexey', 'Pehov', '1963-09-30T00:00']
+        ];
+
+        let sqlInsertRooms = `INSERT INTO Rooms
+            (RoomName, Free)
+            VALUES ?`;
+
+        db.query(sqlInsertRooms, [roomData], (err, result) => {
+            if (err) {
+                throw err;
+            }
+            console.log('Data inserted into Rooms table');
+        });
+
 
     let personData = [
             ['M','Max', 'Mustermann', '1990-02-01T00:00','123 456','mail@mail.com'],

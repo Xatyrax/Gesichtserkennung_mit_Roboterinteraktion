@@ -85,6 +85,10 @@ app.get('/termin', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, 'client', 'termin/termin.html'));
 })
 
+app.get('/rooms', (req: Request, res: Response) => {
+  res.sendFile(path.join(__dirname, 'client', 'raeume/raeume.html'));
+})
+
 /**********
 *   API   * //TODO:In API auslagern
 ***********/
@@ -354,6 +358,31 @@ app.post("/api/client", (req: Request, res: Response) => {
   }
 
     res.redirect("/termin");
+});
+
+app.get("/api/room", async (req: Request, res: Response) => {
+  let RaumDaten:any = await sql_execute(`SELECT RoomID, RoomName, Free FROM Rooms;`);
+
+  res.json({ roomData: RaumDaten});
+});
+
+app.post("/api/room", async (req: Request, res: Response) => {
+  let roomId = req.body.roomId;
+  let RaumDaten:any = await sql_execute(`SELECT RoomID, RoomName, Free FROM Rooms WHERE RoomID = ${roomId};`);
+  let Roomstatus:number = JSON.parse(JSON.stringify(RaumDaten[0].Free)).data;
+  let sqlcommand:string = '';
+
+  if(Roomstatus == 1)
+  {sqlcommand = "Update Rooms set Free = 0 WHERE RoomID = ?";}
+  else if(Roomstatus == 0)
+  {sqlcommand = "Update Rooms set Free = 1 WHERE RoomID = ?";}
+  else
+  {console.log('Variable Roomstatus has an invalid value')}
+
+  let data = [roomId];
+  sql_execute_write(sqlcommand,data);
+
+  res.redirect("/rooms");
 });
 
 app.listen(PORT, '0.0.0.0', () => {
