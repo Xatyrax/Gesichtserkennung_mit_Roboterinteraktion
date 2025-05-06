@@ -1,7 +1,18 @@
 // import express,{ Request, Response } from 'express';
 // import session from 'express-session';
+import fixedValues from '../phandam_modules/config';
 
 export function validateUserInputs(starttime:Date,endtime:Date,sex:string|null,firstname:string, lastname:string, birthday:Date, phone:string|null,mail:string|null):string|null{
+
+    if(String(starttime) == 'Invalid Date')
+    {return "Ungültige Startzeit";}
+    if(starttime.getHours() < fixedValues.OeffnungszeitVon)
+    {return "Terminbeginn liegt vor der Öffnungszeit";}
+
+    if(String(endtime) == 'Invalid Date')
+    {return "Ungültige Endzeit";}
+    if(endtime.getHours() >= fixedValues.OeffnungszeitBis)
+    {return "Terminende liegt nach der Schließungszeit";}
 
     if(firstname == '')
     {return "Vorname darf nicht leer sein!";}
@@ -11,6 +22,13 @@ export function validateUserInputs(starttime:Date,endtime:Date,sex:string|null,f
 
     if(String(birthday) == 'Invalid Date')
     {return "Geburtstag darf nicht leer sein!";}
+
+
+    if(starttime.getHours() < fixedValues.OeffnungszeitVon)
+    {return "Terminbeginn liegt vor der Öffnungszeit";}
+
+    if(endtime.getHours() >= fixedValues.OeffnungszeitBis)
+    {return "Terminende liegt nach der Schließungszeit";}
 
     if(starttime >= endtime)
     {return "Die Endzeit des Termins muss nach der Startzeit liegen!";}
