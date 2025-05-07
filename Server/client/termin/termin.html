@@ -11,51 +11,57 @@
     <div class="pagebody">
         <input type="hidden" id="eventid" name="fav_language">
         <div id="Datum" class="datetime">
-            <span id="date"></span>
+            <label>Datum: </label><span id="date"></span>
             <br>
         </div>
     <div id="Termindaten" class="terminzeiten">
         <div id="uhrzeitstart" class="datetime">
-            <label>Start</label>
+            <label>Start</label><br>
             <input type="time" id="startuhrzeit" name="fav_language">
             <br>
         </div>
         <div id="uhrzeitende" class="datetime">
-            <label>Ende</label>
+            <label>Ende</label><br>
             <input type="time" id="enduhrzeit" name="fav_language">
             <br>
         </div>
     </div>
+    </div>
+    <div class="pagebody">
     <label id="fehler" class="error"></label>
-    <div id="Eingabe" class="eingabe">
 
-        <label>Geschlecht</label>
-        <input type="text" id="geschlecht" name="fav_language">
+        <label>Geschlecht</label><br>
+<!--         <input type="text" id="geschlecht" name="fav_language" class="input inputShort"> -->
+        <select id="geschlecht" class="inputShort">
+            <option value="M">Männlich</option>
+            <option value="W">Weiblich</option>
+            <option value="D">Divers</option>
+        </select>
         <br>
-        <label>Vorname</label>
-        <input type="text" id="vorname" name="fav_language">
+        <label>Vorname</label><br>
+        <input type="text" id="vorname" name="fav_language" class="inputLong">
         <br>
-        <label>Nachname</label>
-        <input type="text" id="nachname" name="fav_language">
+        <label>Nachname</label><br>
+        <input type="text" id="nachname" name="fav_language" class="inputLong">
         <br>
-        <label>Geburtsdatum</label>
-        <input type="date" id="geburtsdatum" name="fav_language">
+        <label>Geburtsdatum</label><br>
+        <input type="date" id="geburtsdatum" name="fav_language" class="inputShort">
         <br>
-        <label>Telefon</label>
-        <input type="text" id="telefon" name="fav_language">
+        </div>
+    <div class="pagebody">
+        <label>Telefon</label><br>
+        <input type="text" id="telefon" name="fav_language" class="inputLong">
         <br>
-        <label>Mail</label>
-        <input type="text" id="mail" name="fav_language">
-
-
-    </div>
+        <label>Mail</label><br>
+        <input type="text" id="mail" name="fav_language" class="inputLong">
+        </div>
+    <div class="pagebody">
     <div id="Button">
-        <button onclick="speichern()">Speichern</button>
-        <button onclick="abbrechen()">Abbrechen</button>
-        <button onclick="loeschen()">Löschen</button>
+        <button onclick="speichern()" class="button">Speichern</button>
+        <button onclick="abbrechen()" class="button">Abbrechen</button>
+        <button onclick="loeschen()" class="button">Löschen</button>
     </div>
-    </div>
-
+</div>
     <script src="/termin/termin.js"></script>
 </body>
 </html>

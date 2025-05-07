@@ -3,10 +3,50 @@ body {
     background-color: #1B4F72;
     margin: 0;
     padding: 0;
+    align-content: center;
 }
 
 h1{color: white; text-align: center;}
 
+.roomContainer{
+    display:flex;
+    width:45%;
+    text-align:center;
+    margin: auto;
+}
+
+.room{
+    margin-bottom:20px;
+}
+
+.roomLabel{
+    margin-bottom:20px;
+}
+
+.pagebody{
+    max-width: 600px;
+    margin:0.5rem auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    background-color: lightgray;
+/*     background-color: #F2A541; */
+    border-radius: 12px;
+}
+
 .hidden{
     display:none
+}
+
+.button{
+    margin-top:20px;
+    height: 30px;
+    width: 100px;
+/*     border-radius: 8px; */
+}
+
+.button:hover {
+    background-color: #F2A541; /* Green */
+/*     color: white; */
 }

@@ -18,7 +18,8 @@ function setRoomInfo(fieldID, roomDbInfo)
 {
     document.getElementById(fieldID + "_ID").textContent = String(roomDbInfo.RoomID);
     let Raumstatus = roomDbInfo.Free.data == 1 ? "Frei" : "Belegt";
-    document.getElementById(fieldID).textContent = roomDbInfo.RoomName + ": " + Raumstatus;
+    document.getElementById(fieldID).textContent = roomDbInfo.RoomName + ":";
+    document.getElementById(fieldID + "_Status").textContent = Raumstatus;
 
     document.getElementById(fieldID + "_ButtonID").onclick = function() {changeStatus_room(roomDbInfo.RoomID)};
 }

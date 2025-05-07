@@ -84,7 +84,8 @@ let data = await response.json();
                 {
 
                     if (data.date) {
-                        document.getElementById("date").textContent = data.date;
+                        let date = UstringToDeDateString(data.date);
+                        document.getElementById("date").textContent = date;
                     }
                     if (data.datetime) {
 

@@ -7,23 +7,43 @@
     <title>Terminverwaltung</title>
 </head>
 <body>
-<button onclick="back()">Zurück</button>
 <h1>Phandam</h1>
-<div class="room">
-<label id="room1_ID" class="hidden">Behandlungsraum 1</label>
-<label id="room1">Behandlungsraum 1</label>
-<button id="room1_ButtonID">Status ändern</button>
+<div style="text-align: center; margin-top:30px; margin-right:50%;margin-bottom:30px;">
+<button onclick="back()" class="button">Zurück</button>
 </div>
+<div class="roomContainer">
+<div class="pagebody">
 <div class="room">
-<label id="room2_ID" class="hidden">Behandlungsraum 1</label>
-<label id="room2">Behandlungsraum 2</label>
-<button id="room2_ButtonID">Status ändern</button>
+<label id="room1_ID" class="hidden"></label>
+<div class="roomLabel">
+<label id="room1" class="roomLabel">Behandlungsraum 1</label><br>
 </div>
+<label id="room1_Status"></label><br>
+<button id="room1_ButtonID" class="button">Status ändern</button>
+</div>
+</div>
+<div class="pagebody">
 <div class="room">
-<label id="room3_ID" class="hidden">Behandlungsraum 1</label>
-<label id="room3">Behandlungsraum 3</label>
-<button id="room3_ButtonID">Status ändern</button>
+<label id="room2_ID" class="hidden"></label>
+<div class="roomLabel">
+<label id="room2" class="roomLabel">Behandlungsraum 2</label><br>
 </div>
+<label id="room2_Status"></label><br>
+<button id="room2_ButtonID" class="button">Status ändern</button>
+</div>
+</div>
+<div class="pagebody">
+<div class="room">
+<label id="room3_ID" class="hidden"></label>
+<div class="roomLabel">
+<label id="room3" class="roomLabel">Behandlungsraum 3</label><br>
+</div>
+<label id="room3_Status"></label><br>
+<button id="room3_ButtonID" class="button">Status ändern</button>
+</div>
+</div>
+</div>
+
 
 <script src="/raeume/raeume.js"></script>
 </body>
