@@ -5,9 +5,11 @@ let data = await response.json();
 
                 if(data.userInputError)
                 {
+                    let date = UstringToDeDateString(data.userInputError.InputedData.date);
+
                     document.getElementById("fehler").textContent = data.userInputError.message;
                     document.getElementById("eventid").value = data.userInputError.InputedData.eventid;
-                    document.getElementById("date").textContent = data.userInputError.InputedData.date;
+                    document.getElementById("date").textContent = date;
                     document.getElementById("startuhrzeit").value = data.userInputError.InputedData.starttime;
                     document.getElementById("enduhrzeit").value = data.userInputError.InputedData.endtime;
                     document.getElementById("geschlecht").value = data.userInputError.InputedData.sex;
@@ -28,9 +30,7 @@ let data = await response.json();
                     let arrStart = eventdata.date.split("T");
 
                     //Date
-                    let arrEventdate = String(eventdata.date).split("T")[0].split("-");
-                    let eventdate = new Date(arrEventdate[0],arrEventdate[1]-1,arrEventdate[2],12,0,0);
-                    let date = eventdate.toLocaleDateString("de-DE", {year: 'numeric',  month: '2-digit',  day: '2-digit',});
+                    let date = UstringToDeDateString(eventdata.date);
 
 
                     //Starttime
@@ -101,6 +101,13 @@ let data = await response.json();
                 }
 
 });
+
+function UstringToDeDateString(ustring){
+    let arrEventdate = String(ustring).split("T")[0].split("-");
+    let eventdate = new Date(arrEventdate[0],arrEventdate[1]-1,arrEventdate[2],12,0,0);
+    let date = eventdate.toLocaleDateString("de-DE", {year: 'numeric',  month: '2-digit',  day: '2-digit',});
+    return date;
+}
 
 
 function speichern() {

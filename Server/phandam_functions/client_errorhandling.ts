@@ -35,7 +35,7 @@ export function validateUserInputs(starttime:Date,endtime:Date,sex:string|null,f
 
     if(sex != null)
     {
-        if((sex as string) !== 'M' || (sex as string) !== 'W' || (sex as string) !== 'D')
+        if((sex as string) !== 'M' && (sex as string) !== 'W' && (sex as string) !== 'D')
         {return "Das Geschlecht muss M, W oder D sein oder leer gelassen werden!";}
     }
 
