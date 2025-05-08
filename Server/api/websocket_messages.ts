@@ -50,24 +50,28 @@ export function SP_Failure(errorMessage:string):string{return `{"type":"FAILURE"
 ***************/
 export function DriveToTarget(target:string):string
 {
-let arrTarget:string;
-
+    let arrTarget:string;
           switch (target) {
-            case 'W':
+            case "W":
                 arrTarget = '[1,0,0,0]';
-            case 'B1':
-                arrTarget = '[0,1,0,0]'
-            case 'B2':
-                arrTarget = '[0,0,1,0]'
-            case 'B3':
-                arrTarget = '[0,0,0,1]'
+                break;
+            case "B1":
+                arrTarget = '[0,1,0,0]';
+                break;
+            case "B2":
+                arrTarget = '[0,0,1,0]';
+                break;
+            case "B3":
+                arrTarget = '[0,0,0,1]';
+                break;
             default:
               return 'Error';
           }
-          return `{"Type": "DRIVE_TO_ROOM", "Target":"${arrTarget}"}`;
+          return `{"type": "DRIVE_TO_ROOM", "Target":"${arrTarget}"}`;
 }
-export function DriveToBase():string{return '{"Type": "DRIVE_TO_BASE"}';}
-export function DriveToPickUpPatient():string{return '{"Type": "PICK_PATIENT"}';}
+export function DriveToBase():string{return '{"type": "DRIVE_TO_BASE"}';}
+export function DriveToPickUpPatient():string{return '{"type": "PICK_PATIENT"}';}
+export function Ro_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
 
 /*************
 *   Export   *
@@ -75,4 +79,4 @@ export function DriveToPickUpPatient():string{return '{"Type": "PICK_PATIENT"}';
 
 //export default;
 
-export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response};
+export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure};

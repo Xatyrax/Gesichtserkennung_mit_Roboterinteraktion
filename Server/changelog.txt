@@ -1,3 +1,14 @@
+08.05.2025 15:00 Uhr:
+Patient vorhanden (Mit Termin) Workflow:
+[Bild Updload]
+Server-->Gesicht: {"type": "AVALIBLE"}
+Gesicht-->Server: {"type": "AVALIBLE_ANSWER", "answer":"TRUE", "bild_id":"[id]"}
+Server-->Smartphone: {"type":"Customer_Appointment"}
+Server-->Roboter: {"type": "DRIVE_TO_ROOM", "Target":"[(0|1), (0|1), (0|1), (0|1)]"}
+Roboter-->Server: {"type": "DRIVE_TO_ROOM_ANSWER", "Answer":"TRUE"}
+
+
+
 04.05.2025 15:00 Uhr:
 Patient vorhanden (Kein Termin) Workflow:
 [Bild Updload]

@@ -17,7 +17,8 @@ setRoomInfo('room3',data.roomData[2]);
 function setRoomInfo(fieldID, roomDbInfo)
 {
     document.getElementById(fieldID + "_ID").textContent = String(roomDbInfo.RoomID);
-    let Raumstatus = roomDbInfo.Free.data == 1 ? "Frei" : "Belegt";
+    // let Raumstatus = roomDbInfo.Free.data == 1 ? "Frei" : "Belegt";
+    let Raumstatus = roomDbInfo.Free == 1 ? "Frei" : "Belegt";
     document.getElementById(fieldID).textContent = roomDbInfo.RoomName + ":";
     document.getElementById(fieldID + "_Status").textContent = Raumstatus;
 

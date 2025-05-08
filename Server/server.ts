@@ -15,6 +15,7 @@ import {sendToClient, getLastMessage } from './api/websocket_modules';
 import {StartBackgroudActions} from './phandam_modules/backgroudTasks';
 import {SM_Audio_GenerationFailure} from './api/websocket_messages';
 import { validateUserInputs } from './phandam_functions/client_errorhandling';
+import { GetAllRooms,GetRoomByID,SetRoomStatus } from './phandam_functions/room_functions';
 
 
 const app = express();
@@ -361,26 +362,16 @@ app.post("/api/client", (req: Request, res: Response) => {
 });
 
 app.get("/api/room", async (req: Request, res: Response) => {
+  let RoomData = await GetAllRooms();
   let RaumDaten:any = await sql_execute(`SELECT RoomID, RoomName, Free FROM Rooms;`);
-
-  res.json({ roomData: RaumDaten});
+  res.json({ roomData: RoomData});
 });
 
 app.post("/api/room", async (req: Request, res: Response) => {
   let roomId = req.body.roomId;
-  let RaumDaten:any = await sql_execute(`SELECT RoomID, RoomName, Free FROM Rooms WHERE RoomID = ${roomId};`);
-  let Roomstatus:number = JSON.parse(JSON.stringify(RaumDaten[0].Free)).data;
-  let sqlcommand:string = '';
-
-  if(Roomstatus == 1)
-  {sqlcommand = "Update Rooms set Free = 0 WHERE RoomID = ?";}
-  else if(Roomstatus == 0)
-  {sqlcommand = "Update Rooms set Free = 1 WHERE RoomID = ?";}
-  else
-  {console.log('Variable Roomstatus has an invalid value')}
-
-  let data = [roomId];
-  sql_execute_write(sqlcommand,data);
+  let roomData = await GetRoomByID(roomId);
+  let newRoomStatus = roomData[0].Free == true ? false : true;
+  await SetRoomStatus(roomId,newRoomStatus);
 
   res.redirect("/rooms");
 });

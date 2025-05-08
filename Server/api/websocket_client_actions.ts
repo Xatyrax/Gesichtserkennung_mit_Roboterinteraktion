@@ -7,8 +7,9 @@ import fixedValues from '../phandam_modules/config';
 import { sleep } from '../phandam_modules/timing_utils';
 import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform } from '../phandam_modules/date_time_utils';
 import { getNextAppointment } from '../phandam_functions/appointment_functions';
+import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room_functions';
 // import { sleep } from '../phandam_functions/room_fuctions';
-import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response} from './websocket_messages';
+import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure} from './websocket_messages';
 
 
 
@@ -120,19 +121,52 @@ export async function faceFileUploaded(){
   if(Face_Exists_Response.type != 'AVALIBLE_ANSWER'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
 
   if(Face_Exists_Response.answer == 'FALSE'){
+      console.log('Gesicht nicht bekannt. Neuer Patient wird angelegt');
       sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
       PatientAnlegen();
   }
+  //TODO: Was wenn keine BildID mitgeschickt wird
   if(Face_Exists_Response.answer == 'TRUE'){
     try{Number(Face_Exists_Response.bild_id)}catch{console.log("Gesichtserkennung hat keine gültige ID zurückgegeben"); return;}
+    console.log('Gesicht bekannt.');
     try{
       if(await HasAppointment(Face_Exists_Response.bild_id) == true)
       {
+        console.log('Der Patient hat einen Termin.');
         sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
-        //TODO: Prüfen welches Zimmer frei ist und an Roboter senden
+        let Raeume = await GetAllRooms();
+        if(Raeume[0].Free == true)
+        {
+          sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
+          await SetRoomStatus(Raeume[0].RoomID,false);
+        }
+        else if(Raeume[1].Free == true)
+        {
+          sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B2'));
+          await SetRoomStatus(Raeume[1].RoomID,false);
+        }
+        else if(Raeume[2].Free == true)
+        {
+          sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B3'));
+          await SetRoomStatus(Raeume[2].RoomID,false);
+        }
+        else{
+          sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('W'));
+        }
+        let Drive_Response:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
+        if(Drive_Response == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
+        if(Drive_Response.type=='DRIVE_TO_ROOM_ANSWER')
+        {
+          if(Drive_Response.Answer == 'TRUE'){console.log('Patient mit Termin wurde weitergeleitet!');}
+          else {console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');}
+        }
+        else
+        {console.log('Ungültige Antwort vom Roboter nachdem er losgeschickt wurde');}
+
       }
       else
       {
+        console.log('Der Patient hat keinen Termin.');
         sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
         while(true)
         {
@@ -205,20 +239,18 @@ async function PatientAnlegen(){
 
 async function HasAppointment(bild_id:number):Promise<Boolean>{
     return new Promise(async (resolve, reject) => {
-    console.log('Abfrage ob Termin vorhanden');
     //TODO:Termin prüfen
     //ID von Gesichtserkennung abfragen
 
     let now:Date = new Date();
-    //TODO:Time Overflow?
-    let maxFrüh:Date = now;
-    maxFrüh.setMinutes(now.getMinutes() - fixedValues.MaximaleVerfruehungsDauerInMinuten);
-    let maxSpät:Date = now;
-    maxSpät.setMinutes(now.getMinutes() + fixedValues.MaximaleVerspaetungsDauerInMinuten);
+    let milliSubstract = fixedValues.MaximaleVerfruehungsDauerInMinuten*60*1000;
+    let maxFrüh:Date = new Date(now.getTime() - milliSubstract);
+    let milliAdd = fixedValues.MaximaleVerspaetungsDauerInMinuten*60*1000;
+    let maxSpät:Date = new Date(now.getTime() + milliAdd);
 
     let Termine:any;
     try{
-    let getAppoinmentsCommand = `Select AppointmentID From Appointments WHERE PatientID = ${bild_id} AND Start > '${convertDateToUString(maxFrüh)}' AND Start < '${convertDateToUString(maxSpät)}'`;
+    let getAppoinmentsCommand = `Select AppointmentID From Appointments WHERE PatientID = ${bild_id} AND Start > '${convertDateToUString(maxFrüh)}' AND Start < '${convertDateToUString(maxSpät)};'`;
     Termine = await sql_execute(getAppoinmentsCommand);
     } catch(error){console.log(`ID kann nicht zugeordnet werden. Fehler: ${error}`);reject(error);}
 
