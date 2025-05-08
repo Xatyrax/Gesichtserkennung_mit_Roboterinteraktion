@@ -8,7 +8,7 @@ return new Promise(async (resolve, reject) => {
     try{
       let messageText = getLastMessage(senderID);
       let message = senderID + ': ' + messageText;
-      console.log(message);
+      // console.log(message);
       const parsedjson = JSON.parse(messageText);
       //TODO: event raus
       if(parsedjson.type != null || parsedjson.event != null)

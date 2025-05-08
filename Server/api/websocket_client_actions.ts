@@ -31,6 +31,9 @@ function DebugMode(Message_mode:string, value:number):string{
               return SM_Audio_GenerationSuccess();
             case 5:
               return SM_Audio_GenerationFailure('DebugError');
+            case 6:
+              sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
+              return 'An Roboter gesendet';
             default:
               return 'Error';
           }
