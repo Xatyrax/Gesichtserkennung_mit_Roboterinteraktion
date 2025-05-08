@@ -186,8 +186,8 @@ export async function faceFileUploaded(){
         sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
         while(true)
         {
-            let Next_Appointment_Request:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
-            if(Next_Appointment_Request == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure("Smartphone Timeout! nextAppointment Request wurde erwartet."));return;}
+            // let Next_Appointment_Request:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
+            // if(Next_Appointment_Request == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure("Smartphone Timeout! nextAppointment Request wurde erwartet."));return;}
             let nextAppointment:Date = await getNextAppointment();
             let date:string = convertDateToSmartphoneDate(nextAppointment);
             let time:string = convertDateToSmartphoneTime(nextAppointment);
