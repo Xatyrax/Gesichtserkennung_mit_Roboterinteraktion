@@ -53,16 +53,16 @@ export function DriveToTarget(target:string):string
     let arrTarget:string;
           switch (target) {
             case "W":
-                arrTarget = '[1,0,0,0]';
+                arrTarget = '1,0,0,0';
                 break;
             case "B1":
-                arrTarget = '[0,1,0,0]';
+                arrTarget = '0,1,0,0';
                 break;
             case "B2":
-                arrTarget = '[0,0,1,0]';
+                arrTarget = '0,0,1,0';
                 break;
             case "B3":
-                arrTarget = '[0,0,0,1]';
+                arrTarget = '0,0,0,1';
                 break;
             default:
               return 'Error';
