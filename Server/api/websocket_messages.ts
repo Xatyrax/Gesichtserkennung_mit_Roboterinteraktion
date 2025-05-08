@@ -5,17 +5,17 @@ import fixedValues from '../phandam_modules/config';
 ******************/
 
 //Kown Patient
-export function SM_Face_KnownPatient(withAppointment:string):string{return `{"type":"Known_Customer", "Appointment":"${withAppointment}"}`;}
+export function SM_Face_KnownPatient(withAppointment:string):string{return `{"type":"KNOWN_CUSTOMER", "appointment":"${withAppointment}"}`;}
 //Debug: 0
 export function SM_Face_KnownPatient_WithAppointment():string{return SM_Face_KnownPatient("TRUE");}
 //Debug: 1
 export function SM_Face_KnownPatient_WithoutAppointment():string{return SM_Face_KnownPatient("FALSE");}
 
 //Unkown Patient (Debug: 2)
-export function SM_Face_UnknownPatient():string{return `{"type":"Unknown_Customer"}`;}
+export function SM_Face_UnknownPatient():string{return `{"type":"UNKNOWN_CUSTOMER"}`;}
 
 //Smartphone Timeout (Debug: 3)
-export function SM_Face_Timeout():string{return `{"type":"Timeout"}`;}
+export function SM_Face_Timeout():string{return `{"type":"TIMEOUT"}`;}
 
 //Smartphone Timeout (Debug: 4)
 export function SM_Audio_GenerationSuccess():string{return `{"type":"AUDIO_GENERATION_REQUEST_SUCCESS"}`;}
@@ -24,9 +24,9 @@ export function SM_Audio_GenerationFailure(fehlermeldung: string):string{return 
 
 export function SM_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
 
-export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","Success":"TRUE"}`;}
+export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","success":"TRUE"}`;}
 
-export function SM_NextAppointment_Response(date:string,time:string,weekday:string):string{return `{"Date":"${date}", "Time":"${time}", "Weekday":"${weekday}"}`;}
+export function SM_NextAppointment_Response(date:string,time:string,weekday:string):string{return `{"type":"NEXT_APPOINTMENT","date":"${date}", "time":"${time}", "weekday":"${weekday}"}`;}
 
 
 // Für das Smartphone nicht wichtig, es bekommt nur eine With Appointment message, damit der Fall für das Smartphone abgeschlossen ist.
@@ -35,8 +35,9 @@ export function SM_NextAppointment_Response(date:string,time:string,weekday:stri
 /**************
 *   Gesicht   *
 ***************/
-export function GE_Does_Face_Exist():string{return `{"Type": "AVALIBLE"}`;}
-export function GE_New_Patient(id:number):string{return `{"Type": "NEW", "ID":"${String(id)}"}`;}
+//TODO: Verwendet???
+export function GE_Does_Face_Exist():string{return `{"type": "AVALIBLE"}`;}
+export function GE_New_Patient(id:number):string{return `{"type": "NEW", "ID":"${String(id)}"}`;}
 
 
 /**************

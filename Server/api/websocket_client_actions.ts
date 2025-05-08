@@ -98,18 +98,20 @@ export async function voiceFileUploaded(){
         let Gebrutsdatum = parsedjson.message.text.dateOfBirth;
         let Tel = parsedjson.message.text.phoneNumber;
         let email = parsedjson.message.text.emailAddress;
-        let smartphoneresponse = `{"Success": "TRUE", "message": {"firstname": "${vorname}", "lastname": "${nachname}", "sex": "${Geschlecht}", "dateOfBirth": "${Gebrutsdatum}", "phoneNumber": "${Tel}", "emailAddress": "${email}"}}`;
+        let smartphoneresponse = `{"type":"PERSON_DATA","success": "TRUE", "message": {"firstname": "${vorname}", "lastname": "${nachname}", "sex": "${Geschlecht}", "dateOfBirth": "${Gebrutsdatum}", "phoneNumber": "${Tel}", "emailAddress": "${email}"}}`;
+        // let smartphoneresponse = `{"Success": "TRUE", "message": {"firstname": "${vorname}", "lastname": "${nachname}", "sex": "${Geschlecht}", "dateOfBirth": "${Gebrutsdatum}", "phoneNumber": "${Tel}", "emailAddress": "${email}"}}`;
         sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+        //TODO: Warte auf: User Decline und User Accept (siehe Discord). Schleife? Danach auf Terminvereinbarung warten?
         return;
       }
     }catch (error){
-      let smartphoneresponse = `{"Success": "FALSE", "message": "${error}"}`
+      let smartphoneresponse = `{"type":"PERSON_DATA","Success": "FALSE", "message": "${error}"}`
       sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
       return;
     }
     await sleep();
   }
-  let smartphoneresponse = `{"Success": "FALSE", "message": "Timeout"}`
+  let smartphoneresponse = `{"type":"PERSON_DATA","Success": "FALSE", "message": "Timeout"}`
   sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
   sendToClient(fixedValues.websocket_spracherkennungID,'Timeout');
 }
@@ -367,6 +369,8 @@ async function HasAppointment(bild_id:number):Promise<Boolean>{
 // }
 
 export async function AudioGeneration(text:string){
+
+  console.log("Audio Generation Workflow gestartet");
 
   //Datei löschen wenn existent
   if (fs.existsSync(fixedValues.generierteAudio_pfad)) {

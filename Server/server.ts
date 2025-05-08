@@ -111,6 +111,8 @@ app.get("/download/sprache", async (req: Request, res: Response) => {
   res.setHeader('Content-Disposition', `attachment; filename="${fixedValues.generierteAudio_dateiname}"`);
   res.setHeader('Content-Type', 'audio/wav');
 
+  console.log("Download Audiodatei gestartet");
+
   for (let i = 0; i < fixedValues.TimeoutAudiogenerierungInSekunden; i++) {
     try{
       if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
