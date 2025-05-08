@@ -120,7 +120,7 @@ export async function faceFileUploaded(){
 
   //TODO: Nach Debug wieder rein
   // if(Face_Exists_Response.type != 'AVALIBLE_ANSWER'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
-
+  console.log('Respone Ge: ' + Face_Exists_Response);
   if(Face_Exists_Response.event != 'face_result'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
 
   //TODO: Nach Debug wieder ändern
@@ -130,6 +130,7 @@ export async function faceFileUploaded(){
   //     PatientAnlegen();
   // }
 
+    console.log('Respone Ge: ' + Face_Exists_Response);
    if(Face_Exists_Response.result == 'Kein Gesicht im Bild erkannt' || Face_Exists_Response.result == 'Datei ist kein Bild' || Face_Exists_Response.result == 'Gesicht nicht erkannt'){
       console.log('Gesicht nicht bekannt. Neuer Patient wird angelegt');
       sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
@@ -138,7 +139,7 @@ export async function faceFileUploaded(){
 
   //TODO: Nach Debug wieder raus
   if(Face_Exists_Response.result == 'Gesicht erkannt'){
-
+    console.log('Gesicht erkannt');
   //TODO: Was wenn keine BildID mitgeschickt wird
   // if(Face_Exists_Response.answer == 'TRUE'){
     try{Number(Face_Exists_Response.bild_id)}catch{console.log("Gesichtserkennung hat keine gültige ID zurückgegeben"); return;}
