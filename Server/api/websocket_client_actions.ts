@@ -118,15 +118,29 @@ export async function faceFileUploaded(){
   let Face_Exists_Response:(any | null) = await waitForMessage(fixedValues.websocket_gesichtserkennungID,fixedValues.TimeoutGesichtInSekunden);
   if(Face_Exists_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Face_Timeout());return;}
 
-  if(Face_Exists_Response.type != 'AVALIBLE_ANSWER'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
+  //TODO: Nach Debug wieder rein
+  // if(Face_Exists_Response.type != 'AVALIBLE_ANSWER'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
 
-  if(Face_Exists_Response.answer == 'FALSE'){
+  if(Face_Exists_Response.event != 'face_result'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
+
+  //TODO: Nach Debug wieder ändern
+  // if(Face_Exists_Response.answer == 'FALSE'){
+  //     console.log('Gesicht nicht bekannt. Neuer Patient wird angelegt');
+  //     sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
+  //     PatientAnlegen();
+  // }
+
+   if(Face_Exists_Response.result == 'Kein Gesicht im Bild erkannt' || Face_Exists_Response.result == 'Datei ist kein Bild' || Face_Exists_Response.result == 'Gesicht nicht erkannt'){
       console.log('Gesicht nicht bekannt. Neuer Patient wird angelegt');
       sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
       PatientAnlegen();
   }
+
+  //TODO: Nach Debug wieder raus
+  if(Face_Exists_Response.result == 'Gesicht erkannt'){
+
   //TODO: Was wenn keine BildID mitgeschickt wird
-  if(Face_Exists_Response.answer == 'TRUE'){
+  // if(Face_Exists_Response.answer == 'TRUE'){
     try{Number(Face_Exists_Response.bild_id)}catch{console.log("Gesichtserkennung hat keine gültige ID zurückgegeben"); return;}
     console.log('Gesicht bekannt.');
     try{

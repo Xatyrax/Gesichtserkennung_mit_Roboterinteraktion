@@ -10,7 +10,8 @@ return new Promise(async (resolve, reject) => {
       let message = senderID + ': ' + messageText;
       // console.log(message);
       const parsedjson = JSON.parse(messageText);
-      if(parsedjson.type != null)
+      //TODO: event raus
+      if(parsedjson.type != null || parsedjson.event != null)
       {
           resolve(parsedjson);
           break;
