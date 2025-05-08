@@ -15,13 +15,18 @@ document.addEventListener("DOMContentLoaded", async function () {
             let startOfWeek = new Date(today.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)));
 
             let endOfWeek = new Date(today);
-            if(dayOfWeek == 0){endOfWeek.setDate(endOfWeek.getDate()+6);}
-            else if(dayOfWeek == 1){endOfWeek.setDate(endOfWeek.getDate()+5);}
-            else if(dayOfWeek == 2){endOfWeek.setDate(endOfWeek.getDate()+4);}
-            else if(dayOfWeek == 3){endOfWeek.setDate(endOfWeek.getDate()+3);}
-            else if(dayOfWeek == 4){endOfWeek.setDate(endOfWeek.getDate()+2);}
-            else if(dayOfWeek == 5){endOfWeek.setDate(endOfWeek.getDate()+1);}
-            else if(dayOfWeek == 6){endOfWeek.setDate(endOfWeek.getDate()+0);}
+            endOfWeek.setDate(startOfWeek.getDate()+6);
+            // alert(startOfWeek);
+            // alert(endOfWeek);
+            // if(dayOfWeek == 0){endOfWeek.setDate(startOfWeek.getDate()+6);}
+            // else if(dayOfWeek == 1){endOfWeek.setDate(startOfWeek.getDate()+5);}
+            // else if(dayOfWeek == 2){endOfWeek.setDate(startOfWeek.getDate()+4);}
+            // else if(dayOfWeek == 3){endOfWeek.setDate(startOfWeek.getDate()+3);}
+            // else if(dayOfWeek == 4){endOfWeek.setDate(startOfWeek.getDate()+2);}
+            // else if(dayOfWeek == 5){endOfWeek.setDate(startOfWeek.getDate()+1);}
+            // else if(dayOfWeek == 6){endOfWeek.setDate(startOfWeek.getDate()+0);}
+
+            // alert(endOfWeek);
 
             //TODO: Conversion Functions
             const startOfWeekShort = startOfWeek.toLocaleDateString("de-DE", {year: 'numeric',  month: '2-digit',  day: '2-digit',});
