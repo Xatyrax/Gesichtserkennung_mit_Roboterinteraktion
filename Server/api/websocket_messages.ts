@@ -67,11 +67,11 @@ export function DriveToTarget(target:string):string
             default:
               return 'Error';
           }
-          return `{"type": "DRIVE_TO_ROOM", "Target":"${arrTarget}"}`;
+          return `{"Type": "DRIVE_TO_ROOM", "Target":"${arrTarget}"}`;
 }
-export function DriveToBase():string{return '{"type": "DRIVE_TO_BASE"}';}
-export function DriveToPickUpPatient():string{return '{"type": "PICK_PATIENT"}';}
-export function Ro_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
+export function DriveToBase():string{return '{"Type": "DRIVE_TO_BASE"}';}
+export function DriveToPickUpPatient():string{return '{"Type": "PICK_PATIENT"}';}
+export function Ro_Failure(errorMessage:string):string{return `{"Type":"FAILURE","message":"${errorMessage}"}`;}
 
 /*************
 *   Export   *
