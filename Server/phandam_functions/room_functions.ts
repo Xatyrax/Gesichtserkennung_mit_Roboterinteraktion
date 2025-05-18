@@ -1,4 +1,5 @@
 import { sql_execute, sql_execute_write } from '../phandam_modules/db_utils';
+import {TakePatientFromWatingRoom} from '../api/websocket_client_actions';
 
 export async function GetAllRooms():Promise<any>{
     return new Promise(async (resolve, reject) => {
@@ -25,11 +26,35 @@ export async function SetRoomStatus(roomID:number,Free:Boolean){
     let sqlcommand:string = '';
 
     if(Free == true)
-    {sqlcommand = "Update Rooms set Free = 1 WHERE RoomID = ?";}
+    {
+        sqlcommand = "Update Rooms set Free = 1 WHERE RoomID = ?";
+        PatientFromWatingroom();
+    }
     else
     {sqlcommand = "Update Rooms set Free = 0 WHERE RoomID = ?";}
 
     let data = [roomID];
     await sql_execute_write(sqlcommand,data);
 
+}
+
+async function PatientFromWatingroom(){
+// return new Promise(async (resolve, reject) => {
+    let PatientenID:any = await sql_execute(`SELECT PatientID FROM Patients_Rooms WHERE RoomKey = W;`);
+
+    if(PatientenID.length <= 0) {return;}
+
+    let PatientHolenErfolgreich:Boolean = await TakePatientFromWatingRoom(PatientenID[0].PatientenID);
+    if(PatientHolenErfolgreich == false)
+    {
+        console.log('Patient konnte nicht aus Wartezimmer geholt werden');
+        //TODO: Zum Vermeiden von Datenbankleichen kein Return. Evtl. Wiederholen?
+    }
+
+    let sqlcommand:string = 'DELETE FROM Patients_Rooms WHERE PatientID = ?';
+    let data = [PatientenID[0].PatientenID];
+    await sql_execute_write(sqlcommand,data);
+
+    // resolve(true);
+// });
 }

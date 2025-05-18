@@ -220,35 +220,68 @@ export async function faceFileUploaded(){
 
 export async function AudioGeneration(text:string){
 
-  console.log("Audio Generation Workflow gestartet");
-
-  //Datei löschen wenn existent
-  if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
-        fs.unlinkSync(fixedValues.generierteAudio_pfad);
-      }
-
-  //Spracherkennung mitteilen, das Audi genneriert werden soll
-  sendToClient(fixedValues.websocket_spracherkennungID,SP_Audio_Genaration_Request(text));
-
-  //Auf Generierung warten
-  for (let i = 0; i < fixedValues.TimeoutAudiogenerierungInSekunden; i++) {
-    try{
-      if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
-        break;
-      }
-    }
-    catch(error){console.log(error);}
-    await sleep();
-  }
-
   //Smartphone mitteilen, dass die Gererierung abgeschlossen ist
-  if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
+  if (await AudioGenerationWithAnswer(text)) {
         sendToClient(fixedValues.websocket_smartphoneID,SM_Audio_GenerationSuccess());
   }
   else
   {
-      sendToClient(fixedValues.websocket_smartphoneID,SM_Audio_GenerationFailure('Timeout'));
+        sendToClient(fixedValues.websocket_smartphoneID,SM_Audio_GenerationFailure('Timeout'));
   }
+}
+
+export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolean>{
+  return new Promise(async (resolve, reject) => {
+        console.log("Patient abholen gestartet");
+        console.log("freies Zimmer abfragen gestartet");
+        let sql_Command_GetRoomKey = 'Select RoomKey From Rooms WHERE Free = 1;';
+        let roomKey_result:any = await sql_execute(sql_Command_GetRoomKey);
+        if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
+        {console.log('Fehler beim Abrufen des Raumschlüssels. Ungültiger Raumschlüssel von der DB erhalten.')}
+
+        //TODO: Was wenn der Roboter aktuell nicht im Bereit Status ist?
+        sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('W'));
+        console.log("Nachricht an Roboter gesendet");
+
+        let Drive_Response_ToWaitingroom:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
+        if(Drive_Response_ToWaitingroom == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
+        if(Drive_Response_ToWaitingroom.type=='DRIVE_TO_ROOM_ANSWER')
+        {
+          if(Drive_Response_ToWaitingroom.Answer != 'TRUE'){
+            console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');
+            return;
+          }
+        }
+        else
+        {console.log('Ungültige Antwort vom Roboter nachdem er losgeschickt wurde');return;}
+        console.log("Roboter ist im Wartezimmer angekommen erhalten");
+
+        console.log(`Patientendaten für PatientenID ${patientID} abfragen starten`);
+        let sql_Command = 'Select Firstname, Lastname From Patients';
+        let Patienname:any = await sql_execute(sql_Command);
+
+        console.log("Audio generierung starten");
+        let AudiogenerierungErfolgreich = await AudioGenerationWithAnswer(`${Patienname[0].Firstname} ${Patienname[0].Lastname} folgen Sie mir bitte ins Behandlungszimmer`);
+        if (AudiogenerierungErfolgreich == false) {console.log('Audiodatei konnte nicht generiert werden');return;}
+
+        console.log("Patient ins Behandlungszimmer bringen starten");
+        sendToClient(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
+        console.log("Nachricht an Roboter gesendet");
+
+        let Drive_Response:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
+        if(Drive_Response == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
+        if(Drive_Response.type=='DRIVE_TO_ROOM_ANSWER')
+        {
+          if(Drive_Response.Answer != 'TRUE'){
+            console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');
+            return;
+          }
+        }
+        else
+        {console.log('Ungültige Antwort vom Roboter nachdem er losgeschickt wurde');return;}
+
+        console.log("Patient abgeliefert");
+        });
 }
 
 
@@ -362,4 +395,38 @@ async function faceExists():Promise<any>{
 
   throw new Error('Bei der Prüfung ob das Gesicht vorhanden war lief etwas schief. Keiner der definierten Fälle wurde ausgelöst.');
   });
+}
+
+async function AudioGenerationWithAnswer(text:string):Promise<Boolean>{
+return new Promise(async (resolve, reject) => {
+  console.log("Audio Generation Workflow gestartet");
+
+  //Datei löschen wenn existent
+  if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
+        fs.unlinkSync(fixedValues.generierteAudio_pfad);
+      }
+
+  //Spracherkennung mitteilen, das Audi genneriert werden soll
+  sendToClient(fixedValues.websocket_spracherkennungID,SP_Audio_Genaration_Request(text));
+
+  //Auf Generierung warten
+  for (let i = 0; i < fixedValues.TimeoutAudiogenerierungInSekunden; i++) {
+    try{
+      if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
+        break;
+      }
+    }
+    catch(error){console.log(error);reject(false);}
+    await sleep();
+  }
+
+  //Smartphone mitteilen, dass die Gererierung abgeschlossen ist
+  if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
+        resolve(true);
+  }
+  else
+  {
+        reject(false);
+  }
+});
 }

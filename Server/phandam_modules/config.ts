@@ -1,6 +1,6 @@
 let fixedValues = {
     NotUsedVariableString: '',
-    NotUsedVariableDate: new Date(),
+    NotUsedVariableDate: new Date(1900,0,0,0,0,0),
     TermindauerInMinuten: 30,
     OeffnungszeitVon: 8,
     OeffnungszeitBis: 17,

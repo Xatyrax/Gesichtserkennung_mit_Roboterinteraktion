@@ -75,8 +75,9 @@ const db = require('./phandam_modules/dbConnect.js');
 
     let createBehandlungsräumeTableQuery = `CREATE TABLE Rooms (
             RoomID INT AUTO_INCREMENT PRIMARY KEY,
+            RoomKey VARCHAR(255) NOT NULL,
             RoomName VARCHAR(255) NOT NULL,
-            Free BIT NOT NULL
+            Free BIT
         );`;
     db.query(createBehandlungsräumeTableQuery, (err, result) => {
         if (err) {
@@ -100,9 +101,10 @@ const db = require('./phandam_modules/dbConnect.js');
     });
 
     let roomData = [
-            ['Behandlungsraum 1',1],
-            ['Behandlungsraum 2',1],
-            ['Behandlungsraum 3',1]
+            ['Wartezimmer', 'W'],
+            ['Behandlungsraum 1', 'B1',1],
+            ['Behandlungsraum 2', 'B2',1],
+            ['Behandlungsraum 3', 'B3',1]
             // ['Alexey', 'Pehov', '1963-09-30T00:00']
         ];
 
