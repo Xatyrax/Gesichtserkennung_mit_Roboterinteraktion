@@ -89,7 +89,7 @@ export async function voiceFileUploaded(){
   sendToClient(fixedValues.websocket_spracherkennungID,'Sprachdatei hochgeladen. Erwarte Nachricht...');
 
   let Voice_Response:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutSpracheInSekunden);
-  if(Voice_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Face_Timeout());reject(false);return;}
+  if(Voice_Response == null){sendToClient(fixedValues.websocket_spracherkennungID,SP_Failure('Timeout'));return;}
 
   // for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
   //   try{
@@ -170,12 +170,18 @@ export async function faceFileUploaded(){
         }
         else{
           sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('W'));
+          let data = [Raeume[0].RoomID, Face_Exists_Response.filename];
+          let sqlcommand = "INSERT INTO Patients_Rooms (RoomID, PatientID) VALUES (?,?)";
+          sql_execute_write(sqlcommand,data);
         }
         let Drive_Response:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
         if(Drive_Response == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
         if(Drive_Response.type=='DRIVE_TO_ROOM_ANSWER')
         {
-          if(Drive_Response.Answer == 'TRUE'){console.log('Patient mit Termin wurde weitergeleitet!');}
+          if(Drive_Response.Answer == 'TRUE'){
+            console.log('Patient mit Termin wurde weitergeleitet!');
+
+          }
           else {console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');}
         }
         else

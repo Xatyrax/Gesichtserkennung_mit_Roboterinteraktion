@@ -85,6 +85,20 @@ const db = require('./phandam_modules/dbConnect.js');
         console.log('Rooms Tabelle erstellt');
     });
 
+    let createBehandlungsräumeTableQuery = `CREATE TABLE Patients_Rooms (
+            Patients_RoomsID INT AUTO_INCREMENT PRIMARY KEY,
+            PatientID INT NOT NULL,
+            RoomID INT NOT NULL,
+            FOREIGN KEY (PatientID) REFERENCES Patients(PatientID),
+            FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID)
+        );`;
+    db.query(createBehandlungsräumeTableQuery, (err, result) => {
+        if (err) {
+            throw err;
+        }
+        console.log('Patients_Rooms Tabelle erstellt');
+    });
+
     let roomData = [
             ['Behandlungsraum 1',1],
             ['Behandlungsraum 2',1],
