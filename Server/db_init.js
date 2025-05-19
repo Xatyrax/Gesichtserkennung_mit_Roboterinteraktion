@@ -101,7 +101,7 @@ const db = require('./phandam_modules/dbConnect.js');
     });
 
     let roomData = [
-            ['Wartezimmer', 'W'],
+            ['Wartezimmer', 'W',0],
             ['Behandlungsraum 1', 'B1',1],
             ['Behandlungsraum 2', 'B2',1],
             ['Behandlungsraum 3', 'B3',1]
@@ -109,7 +109,7 @@ const db = require('./phandam_modules/dbConnect.js');
         ];
 
         let sqlInsertRooms = `INSERT INTO Rooms
-            (RoomName, Free)
+            (RoomName,RoomKey, Free)
             VALUES ?`;
 
         db.query(sqlInsertRooms, [roomData], (err, result) => {
