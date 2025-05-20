@@ -4,7 +4,7 @@ Websocket Verbindung aufbauen:
 wscat -c ws://localhost:3001
 
 Bild hochladen:
-curl -X POST http://localhost:3000/upload/gesicht -F "myfile=@/home/server/Smartphone/gesicht.png"
+curl -X POST http://localhost:3000/upload/gesicht -F "myfile=@/home/server/Gesichtserkennung_mit_Roboterinteraktion/Server/tests/Full_Test/Test_files/1.jpeg"
 
 curl -X POST http://localhost:3000/upload/sprachetest
 

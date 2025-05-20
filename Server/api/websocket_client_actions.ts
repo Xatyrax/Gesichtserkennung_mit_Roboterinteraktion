@@ -395,8 +395,10 @@ async function faceExists():Promise<any>{
     resolve(Face_Exists_Response);
     return;
   }
-
-  throw new Error('Bei der Prüfung ob das Gesicht vorhanden war lief etwas schief. Keiner der definierten Fälle wurde ausgelöst.');
+  else
+  {
+    throw new Error('Bei der Prüfung ob das Gesicht vorhanden war lief etwas schief. Keiner der definierten Fälle wurde ausgelöst.');
+  }
   });
 }
 

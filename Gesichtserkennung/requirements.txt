@@ -1,9 +1,10 @@
 click==8.1.8
 colorama==0.4.6
-dlib
+# dlib==19.22.0   (manuell installiert)
 face-recognition==1.3.0
 face_recognition_models==0.3.0
-numpy
+numpy==1.24.3
 opencv-python==4.11.0.86
-pillow==11.1.0
+pillow==9.5.0
 websocket-client==1.8.0
+
