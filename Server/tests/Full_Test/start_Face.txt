@@ -1,0 +1,5 @@
+Terminal öffnen in Ordner: /home/server/Gesichtserkennung_mit_Roboterinteraktion/Gesichtserkennung/
+
+conda activate faceenv
+
+python main.py

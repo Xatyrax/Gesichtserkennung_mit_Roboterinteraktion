@@ -1,0 +1,5 @@
+Terminal öffnen in Ordner: /home/server/Gesichtserkennung_mit_Roboterinteraktion/speech_recognition/
+
+source venv/bin/activate
+
+python3 -m speech_recognition.main

@@ -1,0 +1,23 @@
+npx ts-node server.ts
+
+Websocket Verbindung aufbauen:
+wscat -c ws://localhost:3001
+
+Bild hochladen:
+curl -X POST http://localhost:3000/upload/gesicht -F "myfile=@/home/server/Smartphone/gesicht.png"
+
+curl -X POST http://localhost:3000/upload/sprachetest
+
+curl -X POST http://localhost:3000/upload/gesichttest
+
+
+Audio download (Verwendung der Header im Request):
+curl -OJ http://localhost:3000/download/sprache
+
+Audio download (ohne Verwendung der Header im Request):
+curl -O http://localhost:3000/download/sprache/audio.wav
+
+
+Server Adressen:
+http://localhost:3000/upload/gesicht
+http://localhost:3000/upload/sprache

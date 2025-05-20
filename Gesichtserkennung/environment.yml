@@ -1,0 +1,43 @@
+name: faceenv
+channels:
+  - conda-forge
+  - defaults
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+  - https://repo.anaconda.com/pkgs/msys2
+dependencies:
+  - ca-certificates=2025.2.25=haa95532_0
+  - dlib=19.24.1=py39hbee214f_0
+  - intel-openmp=2024.2.1=h57928b3_1083
+  - libblas=3.9.0=31_h641d27c_mkl
+  - libcblas=3.9.0=31_h5e41251_mkl
+  - libhwloc=2.9.1=h51c2c0f_0
+  - libiconv=1.17=h8ffe710_0
+  - libjpeg-turbo=2.1.5.1=hcfcfb64_0
+  - liblapack=3.9.0=31_h1aa476e_mkl
+  - libpng=1.6.39=h19919ed_0
+  - libxml2=2.10.4=hc3477c8_0
+  - libzlib=1.2.13=hcfcfb64_4
+  - mkl=2024.2.2=h66d3029_15
+  - numpy=1.24.3=py39h816b6a6_0
+  - openssl=3.1.0=hcfcfb64_3
+  - pip=25.0=py39haa95532_0
+  - pthreads-win32=2.9.1=hfa6e2cd_3
+  - python=3.9.21=h8205438_1
+  - python_abi=3.9=2_cp39
+  - setuptools=75.8.0=py39haa95532_0
+  - sqlite=3.45.3=h2bbff1b_0
+  - tbb=2021.9.0=h91493d7_0
+  - tzdata=2025a=h04d1e81_0
+  - ucrt=10.0.22621.0=h57928b3_1
+  - vc=14.42=haa95532_4
+  - vs2015_runtime=14.42.34433=he0abc0d_4
+  - wheel=0.45.1=py39haa95532_0
+  - pip:
+      - click==8.1.8
+      - colorama==0.4.6
+      - face-recognition==1.3.0
+      - face-recognition-models==0.3.0
+      - opencv-python==4.11.0.86
+      - pillow==11.1.0
+prefix: C:\Users\Jump0\miniconda3\envs\faceenv
