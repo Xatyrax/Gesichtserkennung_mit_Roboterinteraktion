@@ -9,7 +9,7 @@ import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphon
 import { getNextAppointment } from '../phandam_functions/appointment_functions';
 import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room_functions';
 // import { sleep } from '../phandam_functions/room_fuctions';
-import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure} from './websocket_messages';
+import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure} from './websocket_messages';
 
 
 
@@ -145,7 +145,23 @@ export async function faceFileUploaded(){
 
     //Ist der Filename eine Number? (für spätere Überprüfung ob es eine gültige ID in der DB ist)
     //TODO: Was wenn keine BildID mitgeschickt wird
-    try{Number(Face_Exists_Response.filename)}catch{console.log("Gesichtserkennung hat keine gültige ID zurückgegeben"); return;}
+    if(Face_Exists_Response.filename === undefined)
+    {
+      console.log('Gesichtserkennung hat keine Eigenschaft filename in der JSON Nachricht');
+      sendToClient(fixedValues.websocket_gesichtserkennungID,GE_Failure('Keine filename Eigenschaft in der Nachricht vorhanden'));
+      return;
+    }
+    if(Face_Exists_Response.filename.endsWith('.jpeg') || Face_Exists_Response.filename.endsWith('.png'))
+    {
+      Face_Exists_Response.filename = Face_Exists_Response.filename.split('.')[0];
+    }
+
+    if(isNaN(Number(Face_Exists_Response.filename)))
+    {
+      console.log('Gesichtserkennung hat keine gültige ID zurückgegeben');
+      sendToClient(fixedValues.websocket_gesichtserkennungID,GE_Failure('Ungültige filename Eigenschaft in der Nachricht. Der Filename konnte nicht in einen numerischen Wert umgewandelt werden'));
+      return;
+    }
 
     try{
       if(await HasAppointment(Face_Exists_Response.filename) == true)
@@ -209,6 +225,7 @@ export async function faceFileUploaded(){
               let data = [convertDateToUString(nextAppointment), convertDateToUString(nextAppointment), Face_Exists_Response.bild_id];
               let sqlcommand = "INSERT INTO Appointments (Start, End, PatientID) VALUES (?,?,?)";
               sql_execute_write(sqlcommand,data);
+              console.log('Termin wurde erfolgreich in der Datenbank eingetragen')
               break;
             }
         }

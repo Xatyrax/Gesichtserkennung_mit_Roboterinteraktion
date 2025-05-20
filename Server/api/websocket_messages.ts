@@ -38,6 +38,7 @@ export function SM_NextAppointment_Response(date:string,time:string,weekday:stri
 //TODO: Verwendet???
 export function GE_Does_Face_Exist():string{return `{"type": "AVALIBLE"}`;}
 export function GE_New_Patient(id:number):string{return `{"type": "NEW", "ID":"${String(id)}"}`;}
+export function GE_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
 
 
 /**************
@@ -80,4 +81,4 @@ export function Ro_Failure(errorMessage:string):string{return `{"Type":"FAILURE"
 
 //export default;
 
-export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure};
+export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure};
