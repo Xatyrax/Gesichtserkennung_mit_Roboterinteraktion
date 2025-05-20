@@ -293,6 +293,8 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
 
 //TODO: Wird das auch für die Terminverwaltung gebraucht? --> dann auslagern
 async function PatientAnlegen(){
+
+  //TODO: Null oder allgemeine Fehler abfangen und weitermachen
   let Spracherkennung_NewPatient:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutPatient);
   if(Spracherkennung_NewPatient == null){
       sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('keine Antwort von der Spracherkennung'));
@@ -307,15 +309,15 @@ async function PatientAnlegen(){
       let vorname:string = Spracherkennung_NewPatient.message.text.firstname;
       let nachname:string = Spracherkennung_NewPatient.message.text.lastname;
       //TODO:Fehlererkennung
-      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth);
-      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(0,1));
-      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(0,2));
-      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(0,4));
-      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(0,10));
-      console.log(Spracherkennung_NewPatient.message.text.dateOfBirth.substring(5,7));
-      let gebYear=(Spracherkennung_NewPatient.message.text.dateOfBirth).substring(0,4);
-      let gebMonth=(Spracherkennung_NewPatient.message.text.dateOfBirth).substring(5,7);
-      let gebDay=(Spracherkennung_NewPatient.message.text.dateOfBirth).substring(8,10);
+      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth);
+      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(0,1));
+      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(0,2));
+      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(0,4));
+      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(0,10));
+      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(5,7));
+      let gebYear=(Spracherkennung_NewPatient.message.text.date_of_birth).substring(0,4);
+      let gebMonth=(Spracherkennung_NewPatient.message.text.date_of_birth).substring(5,7);
+      let gebDay=(Spracherkennung_NewPatient.message.text.date_of_birth).substring(8,10);
       let gebDate = new Date(gebYear,gebMonth-1,gebDay,12,0,0);
       let gebrutsdatum:Date = gebDate;
       let tel:string|null = Spracherkennung_NewPatient.message.text.phoneNumber;
@@ -380,15 +382,16 @@ async function faceExists():Promise<any>{
   // try{ console.log('Respone Ge: ' + JSON.stringify(Face_Exists_Response));}
   // catch(error){throw new Error('Falsches JSON Format. Fehler: ' + error);}
 
+  console.log('Gesichtsprüfung: ' + JSON.stringify(Face_Exists_Response));
    if(Face_Exists_Response.result == 'Kein Gesicht im Bild erkannt' || Face_Exists_Response.result == 'Datei ist kein Bild' || Face_Exists_Response.result == 'Gesicht nicht erkannt'){
-      Face_Exists_Response.result = true;
+      Face_Exists_Response.result = false;
       resolve(Face_Exists_Response);
       return;
   }
 
   //TODO: Nach Debug wieder raus
   if(Face_Exists_Response.result == 'Gesicht erkannt'){
-    Face_Exists_Response.result = false;
+    Face_Exists_Response.result = true;
     resolve(Face_Exists_Response);
     return;
   }
