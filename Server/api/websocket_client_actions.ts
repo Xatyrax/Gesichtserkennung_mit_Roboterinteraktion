@@ -366,8 +366,11 @@ async function HasAppointment(bild_id:number):Promise<Boolean>{
 
     let Termine:any;
     try{
-    let getAppoinmentsCommand = `Select AppointmentID From Appointments WHERE PatientID = ${bild_id} AND Start > '${convertDateToUString(maxFrüh)}' AND Start < '${convertDateToUString(maxSpät)};'`;
+      console.log(bild_id);
+    let getAppoinmentsCommand = `Select AppointmentID From Appointments WHERE PatientID = ${bild_id} AND Start > '${convertDateToUString(maxFrüh,true)}' AND Start < '${convertDateToUString(maxSpät,true)};'`;
+    console.log(getAppoinmentsCommand);
     Termine = await sql_execute(getAppoinmentsCommand);
+    console.log(Termine);
     } catch(error){console.log(`ID kann nicht zugeordnet werden. Fehler: ${error}`);reject(error);}
 
     if(Termine.length > 0)
