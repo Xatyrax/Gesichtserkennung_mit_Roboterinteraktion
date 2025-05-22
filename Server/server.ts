@@ -34,7 +34,7 @@ const storage_gesicht = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void
   ) {
-    cb(null, Date.now() + '-' + file.originalname);
+    cb(null, file.originalname);
   }
 });
 const upload_gesicht = multer({ storage: storage_gesicht });
@@ -52,7 +52,7 @@ const storage_sprache = multer.diskStorage({
     file: Express.Multer.File,
     cb: (error: Error | null, filename: string) => void
   ) {
-    cb(null, Date.now() + '-' + file.originalname);
+    cb(null, file.originalname);
   }
 });
 const upload_sprache = multer({ storage: storage_sprache });
@@ -107,7 +107,7 @@ app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request
 });
 
 app.get("/download/sprache", async (req: Request, res: Response) => {
-  //const filePath = path.join(__dirname, 'download', fixedValues.generierteAudio_dateiname);
+  const filePath = path.join(__dirname, 'download', fixedValues.generierteAudio_dateiname);
   res.setHeader('Content-Disposition', `attachment; filename="${fixedValues.generierteAudio_dateiname}"`);
   res.setHeader('Content-Type', 'audio/wav');
 

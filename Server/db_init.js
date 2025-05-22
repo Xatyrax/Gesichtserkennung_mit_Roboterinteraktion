@@ -142,15 +142,13 @@ const db = require('./phandam_modules/dbConnect.js');
 
         let termineData = [
             ['2025-05-21T08:15', '2025-05-21T08:30', '4'],
-            ['2025-05-22T15:20', '2025-05-22T16:00', '5'],
-            ['2025-05-21T12:00', '2025-05-21T12:30', '1'],
+            ['2025-05-24T15:20', '2025-05-24T16:00', '5'],
+            ['2025-05-22T18:00', '2025-05-22T18:30', '1'],
             ['2025-05-23T10:30', '2025-05-23T11:00', '2']
             // ['2025-04-24T09:00', '2025-04-24T09:30', '4']
         ];
 
-        let sqlInsertTermine = `INSERT INTO Appointments
-            (Start, End, PatientID)
-            VALUES ?`;
+        let sqlInsertTermine = `INSERT INTO Appointments (Start, End, PatientID) VALUES ?`;
 
         db.query(sqlInsertTermine, [termineData], (err, result) => {
             if (err) {

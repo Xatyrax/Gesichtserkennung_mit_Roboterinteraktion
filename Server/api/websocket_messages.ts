@@ -26,7 +26,7 @@ export function SM_Failure(errorMessage:string):string{return `{"type":"FAILURE"
 
 export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","success":"TRUE"}`;}
 
-export function SM_NextAppointment_Response(date:string,time:string,weekday:string):string{return `{"type":"NEXT_APPOINTMENT","date":"${date}", "time":"${time}", "weekday":"${weekday}"}`;}
+export function SM_NextAppointment_Response(date:string,time:string,weekday:string):string{return `{"type":"NEXT_APPOINTMENT", "message":{"date":"${date}", "time":"${time}", "weekday":"${weekday}"}}`;}
 
 
 // Für das Smartphone nicht wichtig, es bekommt nur eine With Appointment message, damit der Fall für das Smartphone abgeschlossen ist.

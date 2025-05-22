@@ -207,6 +207,7 @@ export async function faceFileUploaded(){
       else
       {
         console.log('Der Patient hat keinen Termin.');
+          console.log(new Date());
         sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
         while(true)
         {
@@ -216,6 +217,9 @@ export async function faceFileUploaded(){
             let date:string = convertDateToSmartphoneDate(nextAppointment);
             let time:string = convertDateToSmartphoneTime(nextAppointment);
             let weekday:string = convertDateToWeekdayShortform(nextAppointment);
+
+            await sleep(1);
+            console.log(new Date());
             sendToClient(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
             let Next_Appointment_Response:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
             if(Next_Appointment_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure("Smartphone Timeout! nextAppointment Response wurde erwartet."));return;}
