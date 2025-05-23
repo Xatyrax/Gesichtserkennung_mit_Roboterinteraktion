@@ -37,8 +37,8 @@ async def handler(websocket):
         connected_clients.remove(websocket)
 
 async def main():
-    print("🚀 Interaktiver Test-WebSocket-Server auf ws://localhost:8765")
-    async with websockets.serve(handler, "localhost", 8765):
+    print("🚀 Interaktiver Test-WebSocket-Server auf ws://localhost:3001")
+    async with websockets.serve(handler, "localhost", 3001):
         await asyncio.Future()
 
 if __name__ == "__main__":

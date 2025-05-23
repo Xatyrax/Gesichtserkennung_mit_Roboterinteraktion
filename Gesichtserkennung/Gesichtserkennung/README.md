@@ -1,2 +1,0 @@
-# Gesichtserkennung
-Gesichtserkennung Programm

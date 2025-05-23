@@ -30,9 +30,8 @@ def format_image(image_path):
             except Exception as e:
                 print(f"Fehler bei der Exif-Rotation: {e}")
 
-            # Bild in RGB konvertieren und Größe anpassen
+            # Bild in RGB konvertieren
             img = img.convert("RGB")
-            img = img.resize((800, 600))
 
             # Dateiname ohne Pfad und ohne Endung
             filename = os.path.splitext(os.path.basename(image_path))[0]

@@ -30,15 +30,14 @@ class WebSocketClient:
                 )
                 self.ws.run_forever()
             except Exception as e:
-                print(f"🔌 Verbindungsfehler: {e}")
+                print(f"Verbindungsfehler: {e}")
             print("Versuche erneut in 3 Sekunden...")
             time.sleep(3)
 
     def on_open(self, ws):
         self.connected = True
         print("WebSocket verbunden.")
-        #Indentifizierung am Server
-        self.ws.send('ge');
+        self.ws.send('ge')
         # Nachrichten aus der Warteschlange senden
         while not self.message_queue.empty():
             payload = self.message_queue.get()
@@ -82,7 +81,7 @@ class WebSocketClient:
         if self.last_server_action:
             action = self.last_server_action
             self.reset_action()  # Nach Abruf zurücksetzen
-            print(f"🔍 Aktion von WebSocket: {action}")  # Debug-Print
+            print(f"Aktion von WebSocket: {action}")  # Debug-Print
             return action
         return None
 
