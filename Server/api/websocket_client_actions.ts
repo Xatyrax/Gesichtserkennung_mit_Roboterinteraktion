@@ -316,6 +316,7 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
 //TODO: Wird das auch für die Terminverwaltung gebraucht? --> dann auslagern
 async function PatientAnlegen(){
 
+  while(true){
   //TODO: Null oder allgemeine Fehler abfangen und weitermachen
   let Spracherkennung_NewPatient:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutPatient);
   if(Spracherkennung_NewPatient == null){
@@ -340,7 +341,7 @@ async function PatientAnlegen(){
       let email:string|null = Spracherkennung_NewPatient.message.text.emailAddress;
 
       let ResponseForSmartphone = SM_Persondata(vorname,nachname,geschlecht??'-',convertDateToSmartphoneDate(gebrutsdatum),tel??'-',email??'-');
-      sendToClient(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Success());
+      sendToClient(fixedValues.websocket_smartphoneID,ResponseForSmartphone);
 
       sendToClient(fixedValues.websocket_gesichtserkennungID,GE_New_Patient());
 
@@ -376,6 +377,14 @@ async function PatientAnlegen(){
           sql_execute_write(sql_command,sql_data);
           console.log('neuer Patient gespeichert')
       }
+  }
+  else if(Spracherkennung_NewPatient.type == 'EXTRACT_DATA_FROM_AUDIO_STARTING')
+  {
+    continue;
+  }
+  else{
+    break;
+  }
   }
 }
 
