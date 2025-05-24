@@ -1,6 +1,7 @@
 // import express,{ Request, Response } from 'express';
 import fs from 'fs';
 import { sql_execute, sql_execute_write } from '../phandam_modules/db_utils';
+import { isPatientenIDVorhanden } from '../phandam_functions/db_actions';
 import {waitForMessage } from './websocket_common_actions';
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
 import fixedValues from '../phandam_modules/config';
@@ -9,7 +10,7 @@ import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphon
 import { getNextAppointment } from '../phandam_functions/appointment_functions';
 import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room_functions';
 // import { sleep } from '../phandam_functions/room_fuctions';
-import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure} from './websocket_messages';
+import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure,SM_Persondata} from './websocket_messages';
 
 
 
@@ -325,17 +326,11 @@ async function PatientAnlegen(){
   if(Spracherkennung_NewPatient.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
   {
 
-      sendToClient(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Success());
+      // sendToClient(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Success());
       let geschlecht:string|null = Spracherkennung_NewPatient.message.text.sex;
       let vorname:string = Spracherkennung_NewPatient.message.text.firstname;
       let nachname:string = Spracherkennung_NewPatient.message.text.lastname;
       //TODO:Fehlererkennung
-      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth);
-      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(0,1));
-      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(0,2));
-      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(0,4));
-      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(0,10));
-      // console.log(Spracherkennung_NewPatient.message.text.date_of_birth.substring(5,7));
       let gebYear=(Spracherkennung_NewPatient.message.text.date_of_birth).substring(0,4);
       let gebMonth=(Spracherkennung_NewPatient.message.text.date_of_birth).substring(5,7);
       let gebDay=(Spracherkennung_NewPatient.message.text.date_of_birth).substring(8,10);
@@ -344,16 +339,43 @@ async function PatientAnlegen(){
       let tel:string|null = Spracherkennung_NewPatient.message.text.phoneNumber;
       let email:string|null = Spracherkennung_NewPatient.message.text.emailAddress;
 
-      //TODO: Pflichtfelder = null
-      //TODO: Check Date Format and change it
-      let sql_command = `INSERT INTO Patients (Sex,Firstname, Lastname, Birthday,Phone,Mail) VALUES (?,?,?,?,?,?)`;
-      let sql_data = [geschlecht??null,vorname,nachname,gebrutsdatum,tel??null,email??null]
-      sql_execute_write(sql_command,sql_data);
+      let ResponseForSmartphone = SM_Persondata(vorname,nachname,geschlecht??'-',convertDateToSmartphoneDate(gebrutsdatum),tel??'-',email??'-');
+      sendToClient(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Success());
 
-      let highest_ID_Command = 'Select MAX(PatientID) as pID From Patients';
-      let highest_ID:any = await sql_execute(highest_ID_Command);
+      sendToClient(fixedValues.websocket_gesichtserkennungID,GE_New_Patient());
 
-      sendToClient(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(Number(highest_ID[0].pID)));
+      let Gesichtserkennung_NewPatient:(any | null) = await waitForMessage(fixedValues.websocket_gesichtserkennungID,fixedValues.TimeoutPatient);
+      if(Gesichtserkennung_NewPatient == null){
+        console.log('Timeout! Keine Antwort von der Gesichtserkennung');
+        sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('keine Antwort von der Gesichtserkennung'));
+        sendToClient(fixedValues.websocket_gesichtserkennungID,SP_Failure('Timeout! Es wurde auf eine ID von dir gewartet.'));
+        return;
+      }
+
+      if(Gesichtserkennung_NewPatient.event == 'face_result' && Gesichtserkennung_NewPatient.result == 'Gesicht gespeichert')
+      {
+          if(isNaN(Number(Gesichtserkennung_NewPatient.filename)))
+          {
+            console.log('Fehler beim Speichern: Gesichtserkennung hat als ID keine Zahl geschickt');
+            sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Fehler beim Speichern: Gesichtserkennung hat als ID keine Zahl geschickt'));
+            sendToClient(fixedValues.websocket_gesichtserkennungID,SP_Failure('Du hast als ID (filename value) keine Zahl geschickt.'));
+            return;
+          }
+          if(await isPatientenIDVorhanden(Number(Gesichtserkennung_NewPatient.filename))==true)
+          {
+            console.log('Fehler beim Speichern: Die von der Gesichtserkennung geschickte ID ist bereits in der Datenbank vorhanden');
+            sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Fehler beim Speichern: Die von der Gesichtserkennung geschickte ID ist bereits in der Datenbank vorhanden'));
+            sendToClient(fixedValues.websocket_gesichtserkennungID,SP_Failure('Fehler beim Speichern: Die von dir geschickte ID ist bereits in der Datenbank vorhanden'));
+            return;
+          }
+
+          //TODO: Pflichtfelder = null
+          //TODO: Check Date Format and change it
+          let sql_command = `INSERT INTO Patients (PatientID, Sex,Firstname, Lastname, Birthday,Phone,Mail) VALUES (?,?,?,?,?,?,?)`;
+          let sql_data = [Number(Gesichtserkennung_NewPatient.filename),geschlecht??null,vorname,nachname,gebrutsdatum,tel??null,email??null]
+          sql_execute_write(sql_command,sql_data);
+          console.log('neuer Patient gespeichert')
+      }
   }
 }
 
@@ -391,23 +413,13 @@ async function faceExists():Promise<any>{
   let Face_Exists_Response:(any | null) = await waitForMessage(fixedValues.websocket_gesichtserkennungID,fixedValues.TimeoutGesichtInSekunden);
   if(Face_Exists_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Face_Timeout());reject(false);return;}
 
-  //TODO: Nach Debug wieder rein
-  // if(Face_Exists_Response.type != 'AVALIBLE_ANSWER'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));return;}
-  // console.log('Respone Ge: ' + JSON.stringify(Face_Exists_Response));
   if(Face_Exists_Response.event != 'face_result'){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Gesichtserkennung hat falsch formatierte Antwort geschickt'));reject(false);return;}
-
-  //TODO: Nach Debug wieder ändern
-  // if(Face_Exists_Response.answer == 'FALSE'){
-  //     console.log('Gesicht nicht bekannt. Neuer Patient wird angelegt');
-  //     sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
-  //     PatientAnlegen();
-  // }
 
   // try{ console.log('Respone Ge: ' + JSON.stringify(Face_Exists_Response));}
   // catch(error){throw new Error('Falsches JSON Format. Fehler: ' + error);}
 
   console.log('Gesichtsprüfung: ' + JSON.stringify(Face_Exists_Response));
-   if(Face_Exists_Response.result == 'Kein Gesicht im Bild erkannt' || Face_Exists_Response.result == 'Datei ist kein Bild' || Face_Exists_Response.result == 'Gesicht nicht erkannt'){
+   if(Face_Exists_Response.result == 'Kein Gesicht im Bild erkannt' || Face_Exists_Response.result == 'Datei ist kein Bild' || Face_Exists_Response.result == 'Gesicht nicht erkannt' || Face_Exists_Response.result == 'skip'){
       Face_Exists_Response.result = false;
       resolve(Face_Exists_Response);
       return;
@@ -421,7 +433,7 @@ async function faceExists():Promise<any>{
   }
   else
   {
-    throw new Error('Bei der Prüfung ob das Gesicht vorhanden war lief etwas schief. Keiner der definierten Fälle wurde ausgelöst.');
+    reject(`Bei der Prüfung ob das Gesicht vorhanden war lief etwas schief. Keiner der definierten Fälle wurde ausgelöst. Gesichtserkennung hat folgendes result geschickt: ${Face_Exists_Response.result}`);
   }
   });
 }

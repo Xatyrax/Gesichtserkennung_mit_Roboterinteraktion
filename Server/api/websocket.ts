@@ -16,7 +16,7 @@ wss.on('connection', (ws:WebSocket) => {
     ws.on('message', (message:string) => {
 
         //Debug
-        console.log(`Received: ${message}`);
+
         //ws.send(`Echo: ${message}`);
 
         //Prüfen ob der Client sich als Smartphone identifiziert
@@ -57,6 +57,7 @@ wss.on('connection', (ws:WebSocket) => {
 
         if(matchingKeys[0]){
             if(matchingKeys[0] == fixedValues.websocket_smartphoneID){
+                console.log(`Received From ${fixedValues.websocket_smartphoneID}: ${message}`);
                 if(smartphone_wscom.IsMessageInit(message) == true)
                 {
                     smartphone_wscom.InitActions(message);
@@ -67,13 +68,20 @@ wss.on('connection', (ws:WebSocket) => {
                 }
             }
             else if(matchingKeys[0] == fixedValues.websocket_gesichtserkennungID){
+                console.log(`Received From ${fixedValues.websocket_gesichtserkennungID}: ${message}`);
                 clients_lastmessage.set(fixedValues.websocket_gesichtserkennungID,message);
             }
             else if(matchingKeys[0] == fixedValues.websocket_spracherkennungID){
+                console.log(`Received From ${fixedValues.websocket_spracherkennungID}: ${message}`);
                 clients_lastmessage.set(fixedValues.websocket_spracherkennungID,message);
             }
             else if(matchingKeys[0] == fixedValues.websocket_RoboterID){
+                console.log(`Received From ${fixedValues.websocket_RoboterID}: ${message}`);
                 clients_lastmessage.set(fixedValues.websocket_RoboterID,message);
+            }
+            else
+            {
+                console.log(`Received From Unknown Client: ${message}`);
             }
         }
 

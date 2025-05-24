@@ -15,7 +15,6 @@ SERVER_URI = "ws://localhost:3001"
 
 # WebSocket-Verbindung
 ws_client = WebSocketClient(SERVER_URI)
-ws_client.send("GE")  # GE als Initialsignal senden
 
 
 # Ordner erstellen

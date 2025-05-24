@@ -10,9 +10,11 @@ export const clients_lastmessage = new Map([
 ]);
 
 export function sendToClient(id:string, data:string) {
+
     const client = clients.get(id);
     if (client && client.readyState === WebSocket.OPEN) {
         client.send(data);
+        console.log(`Send to ${id}: ${data}`);
     }
 }
 

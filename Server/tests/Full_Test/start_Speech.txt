@@ -2,4 +2,8 @@ Terminal öffnen in Ordner: /home/server/Gesichtserkennung_mit_Roboterinteraktio
 
 source venv/bin/activate
 
+python main.py
+
+
+Old:
 python3 -m speech_recognition.main

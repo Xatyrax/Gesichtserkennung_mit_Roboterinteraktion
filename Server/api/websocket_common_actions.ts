@@ -19,6 +19,6 @@ return new Promise(async (resolve, reject) => {
     }catch{}
     await sleep();
   }
-reject(null);
+resolve(null);
 });
 }
