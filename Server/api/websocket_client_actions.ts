@@ -89,12 +89,12 @@ export async function InitActions(message:string){
 export async function voiceFileUploaded(){
   sendToClient(fixedValues.websocket_spracherkennungID,'Sprachdatei hochgeladen. Erwarte Nachricht...');
 
-  let Voice_Response:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutSpracheInSekunden);
+
+
+  while (true){
+    let Voice_Response:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutSpracheInSekunden);
   if(Voice_Response == null){sendToClient(fixedValues.websocket_spracherkennungID,SP_Failure('Timeout'));return;}
 
-  // for (let i = 0; i < fixedValues.TimeoutSpracheInSekunden; i++) {
-  //   try{
-      // const parsedjson = JSON.parse(getLastMessage(fixedValues.websocket_spracherkennungID));
       if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
       {
         let vorname = Voice_Response.message.text.firstname;
@@ -103,23 +103,22 @@ export async function voiceFileUploaded(){
         let Gebrutsdatum = Voice_Response.message.text.dateOfBirth;
         let Tel = Voice_Response.message.text.phoneNumber;
         let email = Voice_Response.message.text.emailAddress;
-        let smartphoneresponse = `{"type":"PERSON_DATA","success": "TRUE", "message": {"firstname": "${vorname}", "lastname": "${nachname}", "sex": "${Geschlecht}", "dateOfBirth": "${Gebrutsdatum}", "phoneNumber": "${Tel}", "emailAddress": "${email}"}}`;
+        let smartphoneresponse = SM_Persondata(vorname,nachname,Geschlecht,Gebrutsdatum,Tel,email);
+        // `{"type":"PERSON_DATA","success": "TRUE", "message": {"firstname": "${vorname}", "lastname": "${nachname}", "sex": "${Geschlecht}", "dateOfBirth": "${Gebrutsdatum}", "phoneNumber": "${Tel}", "emailAddress": "${email}"}}`;
 
         sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
         //TODO: Warte auf: User Decline und User Accept (siehe Discord). Schleife? Danach auf Terminvereinbarung warten?
         return;
        }
-       else
-       {
-         sendToClient(fixedValues.websocket_smartphoneID,`{"type":"PERSON_DATA","success": "FALSE", "message": "Ungültiges JSON von der Spracherkennung erhalten."}`);
-      }
-    // }catch (error){
-    //   let smartphoneresponse = `{"type":"PERSON_DATA","success": "FALSE", "message": "${error}"}`
-    //   sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
-    //   return;
-    // }
-    // await sleep();
-  // }
+        else if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_STARTING')
+        {
+          continue;
+        }
+        else
+        {
+          sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Ungültiges JSON von der Spracherkennung erhalten.'));
+        }
+  }
   let smartphoneresponse = `{"type":"PERSON_DATA","success": "FALSE", "message": "Timeout"}`
   sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
   sendToClient(fixedValues.websocket_spracherkennungID,'Timeout');
