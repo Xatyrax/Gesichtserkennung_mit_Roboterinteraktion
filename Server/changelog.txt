@@ -1,5 +1,5 @@
 
-24.05.2025:
+26.05.2025:
 neuer Patient nicht vorhanden Workflow:
 
 [Bild Updload]
@@ -9,7 +9,7 @@ Server-->Smartphone: {"type":"UNKNOWN_CUSTOMER"}
 [Smartphone Voice File Upload]
 Spracherkennung-->Server: {"type": "EXTRACT_DATA_FROM_AUDIO_STARTING", "message": {"text": "Starting Data extraction for file person-123.wav"}}
 Spracherkennung-->Server: {"type": "EXTRACT_DATA_FROM_AUDIO_SUCCESS", "message": {"text": {"firstname": "Max", "lastname": "Mustermann", "sex": "M", "date_of_birth": "1990-01-01", "phone_number": "12345", "email_address": "muster.mail.de"}}}
-Server --> Smartphone: { "type":"PERSON_DATA", "success":"success", "message":{"firstname":"[firstname]","lastname":"[lastname]","sex":"[sex]","date_of_birth":"[date_of_birth]","phone_number":"[phone_number]","email_address":"[email_address]"}
+Server --> Smartphone: { "type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS", "success":"success", "message":{"firstname":"[firstname]","lastname":"[lastname]","sex":"[sex]","date_of_birth":"[date_of_birth]","phone_number":"[phone_number]","email_address":"[email_address]"}
 Server--> Gesicht: {"action":"save"}
 Gesicht--> Server: {"event": "face_result", "filename":"[id]", "result":"Gesicht gespeichert"}
 
