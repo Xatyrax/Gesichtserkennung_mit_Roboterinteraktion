@@ -113,14 +113,20 @@ export async function voiceFileUploaded(){
         }
         else
         {
+          if(Voice_Response.message.text.result == 'YES')
+          {
               let nextAppointmentEnd = nextAppointment.setMinutes(nextAppointment.getMinutes() + fixedValues.TermindauerInMinuten)
               let data = [convertDateToUString(nextAppointment), convertDateToUString(nextAppointment), Face_Exists_Response.bild_id];
               let sqlcommand = "INSERT INTO Appointments (Start, End, PatientID) VALUES (?,?,?)";
               sql_execute_write(sqlcommand,data);
               console.log('Termin wurde erfolgreich in der Datenbank eingetragen')
-              break;
-
-          // sendToClient(fixedValues.websocket_smartphoneID,JSON.stringify(Voice_Response));
+              sendToClient(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Success());
+              return;
+          }
+          else
+          {
+              sendToClient(fixedValues.websocket_smartphoneID,'{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","success":"FALSE"}');
+          }
         }
        }
         else if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_STARTING')
@@ -132,7 +138,7 @@ export async function voiceFileUploaded(){
           sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Ungültiges JSON von der Spracherkennung erhalten.'));
         }
   }
-  let smartphoneresponse = `{"type":"PERSON_DATA","success": "FALSE", "message": "Timeout"}`
+  let smartphoneresponse = `{"type":"PERSON_DATA","success": "FALSE", "message": "Timeout"}`;
   sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
   sendToClient(fixedValues.websocket_spracherkennungID,'Timeout');
 }
