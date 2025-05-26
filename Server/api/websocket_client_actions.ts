@@ -12,7 +12,8 @@ import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room
 // import { sleep } from '../phandam_functions/room_fuctions';
 import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure,SM_Persondata} from './websocket_messages';
 
-
+let nextAppointment:Date =new Date();
+let Face_Exists_Response:any='';
 
 function DebugMode(Message_mode:string, value:number):string{
   console.log(Message_mode + " " + value.toString());
@@ -94,9 +95,10 @@ export async function voiceFileUploaded(){
   while (true){
     let Voice_Response:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutSpracheInSekunden);
   if(Voice_Response == null){sendToClient(fixedValues.websocket_spracherkennungID,SP_Failure('Timeout'));return;}
-
       if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
       {
+        if(JSON.stringify(Voice_Response.message.text.result) == 'undefined')
+        {
         let vorname = Voice_Response.message.text.firstname;
         let nachname = Voice_Response.message.text.lastname;
         let Geschlecht = Voice_Response.message.text.sex;
@@ -104,11 +106,22 @@ export async function voiceFileUploaded(){
         let Tel = Voice_Response.message.text.phoneNumber;
         let email = Voice_Response.message.text.emailAddress;
         let smartphoneresponse = SM_Persondata(vorname,nachname,Geschlecht,Gebrutsdatum,Tel,email);
-        // `{"type":"PERSON_DATA","success": "TRUE", "message": {"firstname": "${vorname}", "lastname": "${nachname}", "sex": "${Geschlecht}", "dateOfBirth": "${Gebrutsdatum}", "phoneNumber": "${Tel}", "emailAddress": "${email}"}}`;
 
         sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
         //TODO: Warte auf: User Decline und User Accept (siehe Discord). Schleife? Danach auf Terminvereinbarung warten?
         return;
+        }
+        else
+        {
+              let nextAppointmentEnd = nextAppointment.setMinutes(nextAppointment.getMinutes() + fixedValues.TermindauerInMinuten)
+              let data = [convertDateToUString(nextAppointment), convertDateToUString(nextAppointment), Face_Exists_Response.bild_id];
+              let sqlcommand = "INSERT INTO Appointments (Start, End, PatientID) VALUES (?,?,?)";
+              sql_execute_write(sqlcommand,data);
+              console.log('Termin wurde erfolgreich in der Datenbank eingetragen')
+              break;
+
+          // sendToClient(fixedValues.websocket_smartphoneID,JSON.stringify(Voice_Response));
+        }
        }
         else if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_STARTING')
         {
@@ -127,7 +140,7 @@ export async function voiceFileUploaded(){
 export async function faceFileUploaded(){
 
   //Ist der Patient bekannt?
-  let Face_Exists_Response: any;
+  // let Face_Exists_Response: any;
   try {Face_Exists_Response = await faceExists()}
   catch(error){ console.log(error); return; }
 
@@ -212,7 +225,7 @@ export async function faceFileUploaded(){
         {
             // let Next_Appointment_Request:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
             // if(Next_Appointment_Request == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure("Smartphone Timeout! nextAppointment Request wurde erwartet."));return;}
-            let nextAppointment:Date = await getNextAppointment();
+            nextAppointment = await getNextAppointment();
             let date:string = convertDateToSmartphoneDate(nextAppointment);
             let time:string = convertDateToSmartphoneTime(nextAppointment);
             let weekday:string = convertDateToWeekdayShortform(nextAppointment);

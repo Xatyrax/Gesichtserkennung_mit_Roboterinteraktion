@@ -30,7 +30,7 @@ export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_
 
 export function SM_NextAppointment_Response(date:string,time:string,weekday:string):string{return `{"type":"NEXT_APPOINTMENT", "message":{"date":"${date}", "time":"${time}", "weekday":"${weekday}"}}`;}
 
-export function SM_Persondata(firstname:string,lastname:string,sex:string,date_of_birth:string,phone_number:string,email_address:string):string{return `{ "type":"PERSON_DATA", "success":"success", "message":{"firstname":"${firstname}","lastname":"${lastname}","sex":"${sex}","date_of_birth":"${date_of_birth}","phone_number":"${phone_number}","email_address":"${email_address}"}`;}
+export function SM_Persondata(firstname:string,lastname:string,sex:string,date_of_birth:string,phone_number:string,email_address:string):string{return `{ "type":"PERSON_DATA", "success":"success", "message":{"firstname":"${firstname}","lastname":"${lastname}","sex":"${sex}","date_of_birth":"${date_of_birth}","phone_number":"${phone_number}","email_address":"${email_address}"}}`;}
 
 
 // Für das Smartphone nicht wichtig, es bekommt nur eine With Appointment message, damit der Fall für das Smartphone abgeschlossen ist.
