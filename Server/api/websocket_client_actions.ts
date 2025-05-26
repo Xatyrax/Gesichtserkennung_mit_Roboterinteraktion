@@ -125,7 +125,7 @@ export async function voiceFileUploaded(){
           }
           else
           {
-              sendToClient(fixedValues.websocket_smartphoneID,'{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","success":"FALSE"}');
+              sendToClient(fixedValues.websocket_smartphoneID,'{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","message":"NO"}');
           }
         }
        }

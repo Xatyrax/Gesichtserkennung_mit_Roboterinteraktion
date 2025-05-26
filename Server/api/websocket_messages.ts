@@ -24,7 +24,7 @@ export function SM_Audio_GenerationFailure(fehlermeldung: string):string{return 
 
 export function SM_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
 
-export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","success":"TRUE"}`;}
+export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","message":"YES"}`;}
 
 // export function SM_Extract_From_Audio_No():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","message":{"text":{"result":"No"}}`;}
 
