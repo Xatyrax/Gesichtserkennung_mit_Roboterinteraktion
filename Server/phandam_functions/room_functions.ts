@@ -40,7 +40,7 @@ export async function SetRoomStatus(roomID:number,Free:Boolean){
 
 async function PatientFromWatingroom(){
 // return new Promise(async (resolve, reject) => {
-    let PatientenID:any = await sql_execute(`SELECT PatientID FROM Patients_Rooms WHERE RoomKey = W;`);
+    let PatientenID:any = await sql_execute(`SELECT PatientID FROM Patients_Rooms as PR Join Rooms as R WHERE R.RoomKey = 'W';`);
 
     if(PatientenID.length <= 0) {return;}
 

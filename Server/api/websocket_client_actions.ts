@@ -139,7 +139,6 @@ export async function faceFileUploaded(){
   }
 
   //Patient bekannt
-  //TODO: Nach Debug wieder raus
   if(Face_Exists_Response.result == true){
     console.log('Das Gesicht ist bereits bekannt');
 
@@ -221,6 +220,15 @@ export async function faceFileUploaded(){
             await sleep(1);
             console.log(new Date());
             sendToClient(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
+
+            let Next_Appointment_AudioResponse:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutPatient);
+            if(Next_Appointment_AudioResponse == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure("Smartphone Timeout! nextAppointment Response wurde erwartet."));return;}
+
+            if(Next_Appointment_AudioResponse.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
+            {
+                sendToClient(fixedValues.websocket_smartphoneID,JSON.stringify(Next_Appointment_AudioResponse));
+            }
+
             let Next_Appointment_Response:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
             if(Next_Appointment_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure("Smartphone Timeout! nextAppointment Response wurde erwartet."));return;}
             if(Next_Appointment_Response.message == 'TRUE')
@@ -336,11 +344,20 @@ async function PatientAnlegen(){
       let gebDay=(Spracherkennung_NewPatient.message.text.date_of_birth).substring(8,10);
       let gebDate = new Date(gebYear,gebMonth-1,gebDay,12,0,0);
       let gebrutsdatum:Date = gebDate;
-      let tel:string|null = Spracherkennung_NewPatient.message.text.phoneNumber;
-      let email:string|null = Spracherkennung_NewPatient.message.text.emailAddress;
+      let tel:string|null = Spracherkennung_NewPatient.message.text.phone_number;
+      let email:string|null = Spracherkennung_NewPatient.message.text.email_address;
 
       let ResponseForSmartphone = SM_Persondata(vorname,nachname,geschlecht??'-',convertDateToSmartphoneDate(gebrutsdatum),tel??'-',email??'-');
       sendToClient(fixedValues.websocket_smartphoneID,ResponseForSmartphone);
+
+      let Smartphone_DataCorrect:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
+      if(Smartphone_DataCorrect == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Es wurde auf eine Antwort von dir gewartet ob die Patientendaten so stimmen und vom Paitenen angenommen werden'));return;}
+
+      if(Smartphone_DataCorrect.type == "DATA_CONFIRMATION")
+      {
+        if(Smartphone_DataCorrect.Answer == "FALSE"){continue;}
+        //TODO: Weder True noch false?
+      }
 
       sendToClient(fixedValues.websocket_gesichtserkennungID,GE_New_Patient());
 
@@ -459,6 +476,7 @@ return new Promise(async (resolve, reject) => {
   sendToClient(fixedValues.websocket_spracherkennungID,SP_Audio_Genaration_Request(text));
 
   //Auf Generierung warten
+  console.log(fixedValues.generierteAudio_pfad);
   for (let i = 0; i < fixedValues.TimeoutAudiogenerierungInSekunden; i++) {
     try{
       if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
@@ -475,7 +493,7 @@ return new Promise(async (resolve, reject) => {
   }
   else
   {
-        reject(false);
+        resolve(false);
   }
 });
 }

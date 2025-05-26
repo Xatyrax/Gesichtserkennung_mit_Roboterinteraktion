@@ -8,9 +8,9 @@ let data = await response.json();
 
 // alert(JSON.stringify(data.roomData));
 
-setRoomInfo('room1',data.roomData[0]);
-setRoomInfo('room2',data.roomData[1]);
-setRoomInfo('room3',data.roomData[2]);
+setRoomInfo('room1',data.roomData[1]);
+setRoomInfo('room2',data.roomData[2]);
+setRoomInfo('room3',data.roomData[3]);
 
 });
 
