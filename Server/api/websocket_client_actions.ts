@@ -90,28 +90,89 @@ export async function InitActions(message:string){
 export async function voiceFileUploaded(){
   sendToClient(fixedValues.websocket_spracherkennungID,'Sprachdatei hochgeladen. Erwarte Nachricht...');
 
-
-
   while (true){
     let Voice_Response:(any | null) = await waitForMessage(fixedValues.websocket_spracherkennungID,fixedValues.TimeoutSpracheInSekunden);
-  if(Voice_Response == null){sendToClient(fixedValues.websocket_spracherkennungID,SP_Failure('Timeout'));return;}
-      if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
-      {
-        if(JSON.stringify(Voice_Response.message.text.result) == 'undefined')
+    // if(Voice_Response == null){sendToClient(fixedValues.websocket_spracherkennungID,SP_Failure('Timeout'));return;}
+    console.log('type: ' + JSON.stringify(Voice_Response.type));
+    console.log('firstname: ' + JSON.stringify(Voice_Response.message.text.firstname));
+    console.log('result: ' + JSON.stringify(Voice_Response.message.text.result));
+    if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
+    {
+        if(Voice_Response.message.text.firstname !== undefined)
         {
-        let vorname = Voice_Response.message.text.firstname;
-        let nachname = Voice_Response.message.text.lastname;
-        let Geschlecht = Voice_Response.message.text.sex;
-        let Gebrutsdatum = Voice_Response.message.text.dateOfBirth;
-        let Tel = Voice_Response.message.text.phoneNumber;
-        let email = Voice_Response.message.text.emailAddress;
-        let smartphoneresponse = SM_Persondata(vorname,nachname,Geschlecht,Gebrutsdatum,Tel,email);
+        // let vorname = Voice_Response.message.text.firstname;
+        // let nachname = Voice_Response.message.text.lastname;
+        // let Geschlecht = Voice_Response.message.text.sex;
+        // let Gebrutsdatum = Voice_Response.message.text.dateOfBirth;
+        // let Tel = Voice_Response.message.text.phoneNumber;
+        // let email = Voice_Response.message.text.emailAddress;
+        // let smartphoneresponse = SM_Persondata(vorname,nachname,Geschlecht,Gebrutsdatum,Tel,email);
+        //
+        // sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
 
-        sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+        let geschlecht:string|null = Voice_Response.message.text.sex;
+        let vorname:string = Voice_Response.message.text.firstname;
+        let nachname:string = Voice_Response.message.text.lastname;
+        //TODO:Fehlererkennung
+        let gebYear=(Voice_Response.message.text.date_of_birth).substring(0,4);
+        let gebMonth=(Voice_Response.message.text.date_of_birth).substring(5,7);
+        let gebDay=(Voice_Response.message.text.date_of_birth).substring(8,10);
+        let gebDate = new Date(gebYear,gebMonth-1,gebDay,12,0,0);
+        let gebrutsdatum:Date = gebDate;
+        let tel:string|null = Voice_Response.message.text.phone_number;
+        let email:string|null = Voice_Response.message.text.email_address;
+
+        let ResponseForSmartphone = SM_Persondata(vorname,nachname,geschlecht??'-',convertDateToSmartphoneDate(gebrutsdatum),tel??'-',email??'-');
+        sendToClient(fixedValues.websocket_smartphoneID,ResponseForSmartphone);
+
+        let Smartphone_DataCorrect:(any | null) = await waitForMessage(fixedValues.websocket_smartphoneID,fixedValues.TimeoutPatient);
+        if(Smartphone_DataCorrect == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Es wurde auf eine Antwort von dir gewartet ob die Patientendaten so stimmen und vom Paitenen angenommen werden'));return;}
+
+        if(Smartphone_DataCorrect.type == "DATA_CONFIRMATION")
+        {
+          if(Smartphone_DataCorrect.Answer == "FALSE"){continue;}
+          //TODO: Weder True noch false?
+        }
+
+        sendToClient(fixedValues.websocket_gesichtserkennungID,GE_New_Patient());
+
+        let Gesichtserkennung_NewPatient:(any | null) = await waitForMessage(fixedValues.websocket_gesichtserkennungID,fixedValues.TimeoutPatient);
+        if(Gesichtserkennung_NewPatient == null){
+          console.log('Timeout! Keine Antwort von der Gesichtserkennung');
+          sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('keine Antwort von der Gesichtserkennung'));
+          sendToClient(fixedValues.websocket_gesichtserkennungID,SP_Failure('Timeout! Es wurde auf eine ID von dir gewartet.'));
+          return;
+        }
+
+        if(Gesichtserkennung_NewPatient.event == 'face_result' && Gesichtserkennung_NewPatient.result == 'Gesicht gespeichert')
+        {
+            if(isNaN(Number(Gesichtserkennung_NewPatient.filename)))
+            {
+              console.log('Fehler beim Speichern: Gesichtserkennung hat als ID keine Zahl geschickt');
+              sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Fehler beim Speichern: Gesichtserkennung hat als ID keine Zahl geschickt'));
+              sendToClient(fixedValues.websocket_gesichtserkennungID,SP_Failure('Du hast als ID (filename value) keine Zahl geschickt.'));
+              return;
+            }
+            if(await isPatientenIDVorhanden(Number(Gesichtserkennung_NewPatient.filename))==true)
+            {
+              console.log('Fehler beim Speichern: Die von der Gesichtserkennung geschickte ID ist bereits in der Datenbank vorhanden');
+              sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Fehler beim Speichern: Die von der Gesichtserkennung geschickte ID ist bereits in der Datenbank vorhanden'));
+              sendToClient(fixedValues.websocket_gesichtserkennungID,SP_Failure('Fehler beim Speichern: Die von dir geschickte ID ist bereits in der Datenbank vorhanden'));
+              return;
+            }
+
+            //TODO: Pflichtfelder = null
+            //TODO: Check Date Format and change it
+            let sql_command = `INSERT INTO Patients (PatientID, Sex,Firstname, Lastname, Birthday,Phone,Mail) VALUES (?,?,?,?,?,?,?)`;
+            let sql_data = [Number(Gesichtserkennung_NewPatient.filename),geschlecht??null,vorname,nachname,gebrutsdatum,tel??null,email??null]
+            sql_execute_write(sql_command,sql_data);
+            console.log('neuer Patient gespeichert')
+
         //TODO: Warte auf: User Decline und User Accept (siehe Discord). Schleife? Danach auf Terminvereinbarung warten?
         return;
         }
-        else
+        }
+        else if(Voice_Response.message.text.result !== undefined)
         {
           if(Voice_Response.message.text.result == 'YES')
           {
@@ -128,9 +189,15 @@ export async function voiceFileUploaded(){
               sendToClient(fixedValues.websocket_smartphoneID,'{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","message":"NO"}');
           }
         }
+        else
+        {
+          sendToClient(fixedValues.websocket_smartphoneID,SM_Failure(`Die Nachricht von der Spracherkennung war nicht gültig. firstname=${JSON.stringify(Voice_Response.message.text.firstname)} ; result=${JSON.stringify(Voice_Response.message.text.result)}`));
+        }
        }
         else if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_STARTING')
         {
+          console.log('Fall: EXTRACT_DATA_FROM_AUDIO_STARTING');
+          console.log('continue');
           continue;
         }
         else
@@ -138,9 +205,9 @@ export async function voiceFileUploaded(){
           sendToClient(fixedValues.websocket_smartphoneID,SM_Failure('Ungültiges JSON von der Spracherkennung erhalten.'));
         }
   }
-  let smartphoneresponse = `{"type":"PERSON_DATA","success": "FALSE", "message": "Timeout"}`;
-  sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
-  sendToClient(fixedValues.websocket_spracherkennungID,'Timeout');
+  // let smartphoneresponse = `{"type":"PERSON_DATA","success": "FALSE", "message": "Timeout"}`;
+  // sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
+  // sendToClient(fixedValues.websocket_spracherkennungID,'Timeout');
 }
 
 export async function faceFileUploaded(){
@@ -154,7 +221,7 @@ export async function faceFileUploaded(){
    if(Face_Exists_Response.result == false){
       console.log('Gesicht nicht bekannt. Neuer Patient wird angelegt');
       sendToClient(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
-      PatientAnlegen();
+      // PatientAnlegen();
   }
 
   //Patient bekannt
@@ -236,7 +303,7 @@ export async function faceFileUploaded(){
             let time:string = convertDateToSmartphoneTime(nextAppointment);
             let weekday:string = convertDateToWeekdayShortform(nextAppointment);
 
-            await sleep(1);
+            await sleep(3);
             console.log(new Date());
             sendToClient(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
 
@@ -352,7 +419,6 @@ async function PatientAnlegen(){
   }
   if(Spracherkennung_NewPatient.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
   {
-
       // sendToClient(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Success());
       let geschlecht:string|null = Spracherkennung_NewPatient.message.text.sex;
       let vorname:string = Spracherkennung_NewPatient.message.text.firstname;
