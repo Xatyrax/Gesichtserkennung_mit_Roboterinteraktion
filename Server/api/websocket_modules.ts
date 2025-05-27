@@ -13,17 +13,20 @@ export function sendToClient(id:string, data:string) {
 
     const client = clients.get(id);
     if (client && client.readyState === WebSocket.OPEN) {
-        client.send(data);
         console.log(`Send to ${id}: ${data}`);
+        client.send(data);
     }
 }
 
 export function getLastMessage(id:string):string {
+    console.log("getting lastmessage from: " + id)
     let message = clients_lastmessage.get(id);
     let ret = fixedValues.NotUsedVariableString;
     if(message){
         ret = message;
     }
+    console.log("Received bad message: " + message)
+    console.log("from: " + id)
     clients_lastmessage.set(id,fixedValues.NotUsedVariableString);
     return ret;
 }

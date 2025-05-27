@@ -3,7 +3,7 @@ let fixedValues = {
     NotUsedVariableDate: new Date(1900,0,0,0,0,0),
     TermindauerInMinuten: 30,
     OeffnungszeitVon: 8,
-    OeffnungszeitBis: 17,
+    OeffnungszeitBis: 19,
     MaximaleVerfruehungsDauerInMinuten:500,
     MaximaleVerspaetungsDauerInMinuten:500,
     TimeoutSpracheInSekunden: 500,

@@ -78,6 +78,8 @@ wss.on('connection', (ws:WebSocket) => {
             else if(matchingKeys[0] == fixedValues.websocket_RoboterID){
                 console.log(`Received From ${fixedValues.websocket_RoboterID}: ${message}`);
                 clients_lastmessage.set(fixedValues.websocket_RoboterID,message);
+                console.log("Set last message to: " + message + " for: " + fixedValues.websocket_RoboterID)
+                console.log("Current message from ro: " + clients_lastmessage.get(fixedValues.websocket_RoboterID))
             }
             else
             {
