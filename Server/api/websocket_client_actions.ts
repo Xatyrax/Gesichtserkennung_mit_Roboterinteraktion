@@ -365,7 +365,7 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
         sendToClient(fixedValues.websocket_RoboterID,DriveToPickUpPatient());
         console.log("Nachricht an Roboter gesendet");
         // TODO test log
-        console.log("Patient soll in zimmer " + roomKey_result[0].RoomKey + "gefahren werden");
+        console.log("Patient soll in zimmer " + roomKey_result[0].RoomKey + " gefahren werden");
         let Drive_Response_ToWaitingroom:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
         console.log(Drive_Response_ToWaitingroom);
         if(Drive_Response_ToWaitingroom == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
@@ -379,15 +379,18 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
         else
         {console.log('Ungültige Antwort vom Roboter nachdem er losgeschickt wurde');return;}
         console.log("Roboter ist im Wartezimmer angekommen erhalten");
-        sendToClient(fixedValues.websocket_smartphoneID, '{"Type": "AUDIO_GENERATION_REQUEST_SUCCESS"}')
+
+        sendToClient(fixedValues.websocket_smartphoneID,'{"type":"REACHED_GOAL"}');
+        // sendToClient(fixedValues.websocket_smartphoneID, '{"Type": "AUDIO_GENERATION_REQUEST_SUCCESS"}');
 
         console.log(`Patientendaten für PatientenID ${patientID} abfragen starten`);
         let sql_Command = 'Select Firstname, Lastname From Patients';
         let Patienname:any = await sql_execute(sql_Command);
 
         console.log("Audio generierung starten");
-        //let AudiogenerierungErfolgreich = await AudioGenerationWithAnswer(`${Patienname[0].Firstname} ${Patienname[0].Lastname} folgen Sie mir bitte ins Behandlungszimmer`);
-        //if (AudiogenerierungErfolgreich == false) {console.log('Audiodatei konnte nicht generiert werden');return;}
+        // sendToClient(fixedValues.websocket_spracherkennungID,SP_Audio_Genaration_Request());
+        let AudiogenerierungErfolgreich = await AudioGenerationWithAnswer(`${Patienname[0].Firstname} ${Patienname[0].Lastname} folgen Sie mir bitte ins Behandlungszimmer`);
+        if (AudiogenerierungErfolgreich == false) {console.log('Audiodatei konnte nicht generiert werden');return;}
 
         console.log("Patient ins Behandlungszimmer bringen starten");
         sendToClient(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
@@ -401,7 +404,6 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
           if(Drive_Response.Answer == 'TRUE')
           {
             console.log('Robobter angekommen');
-            sendToClient(fixedValues.websocket_smartphoneID,'{"type":"REACHED_GOAL"}');
             break;
           }
           else if(Drive_Response.Answer == 'FALSE'){
