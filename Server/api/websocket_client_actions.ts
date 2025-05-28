@@ -254,6 +254,7 @@ export async function faceFileUploaded(){
         console.log('Der Patient hat einen Termin.');
         sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
         let Raeume = await GetAllRooms();
+        console.log('Alle Räume abgerufen');
         if(Raeume[1].Free == true)
         {
           sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
@@ -274,8 +275,10 @@ export async function faceFileUploaded(){
           let data = [Raeume[0].RoomID, Face_Exists_Response.filename];
           let sqlcommand = "INSERT INTO Patients_Rooms (RoomID, PatientID) VALUES (?,?)";
           sql_execute_write(sqlcommand,data);
+          console.log('Robot Room Written');
         }
         while(true){
+          console.log('start wating for Robot');
         let Drive_Response:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
         if(Drive_Response == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
         if(Drive_Response.Type=='DRIVE_TO_ROOM_ANSWER')
@@ -290,6 +293,7 @@ export async function faceFileUploaded(){
         else
         {console.log('continue');continue;}
         }
+        console.log('end wating for Robot');
       }
       else
       {
