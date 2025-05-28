@@ -5,11 +5,13 @@ import { sleep } from '../phandam_modules/timing_utils';
 export async function waitForMessage(senderID:string, waitInSeconds:number):Promise<any | null>{
 return new Promise(async (resolve, reject) => {
     await sleep()
-    // console.log("Waiting for message from: " + senderID)
+
     for (let i = 0; i < waitInSeconds; i++) {
         await sleep()
     try{
+
       let messageText = getLastMessage(senderID);
+      console.log('MessageText' + messageText);
       let message = senderID + ': ' + messageText;
       // console.log(message);
       const parsedjson = JSON.parse(messageText);

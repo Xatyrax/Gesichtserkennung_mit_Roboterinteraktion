@@ -280,6 +280,7 @@ export async function faceFileUploaded(){
         while(true){
           console.log('start wating for Robot');
         let Drive_Response:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
+        console.log('Drive_Response');
         if(Drive_Response == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
         if(Drive_Response.Type=='DRIVE_TO_ROOM_ANSWER')
         {
