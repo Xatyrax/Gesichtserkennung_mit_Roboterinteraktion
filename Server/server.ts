@@ -10,12 +10,20 @@ import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
 import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions';
 // import {voiceFileUploaded, faceFileUploaded, audioFileDownload} from './api/websocket_client_actions';
-import './api/websocket';
+
 import {sendToClient, getLastMessage } from './api/websocket_modules';
 import {StartBackgroudActions} from './phandam_modules/backgroudTasks';
 import {SM_Audio_GenerationFailure} from './api/websocket_messages';
 import { validateUserInputs } from './phandam_functions/client_errorhandling';
 import { GetAllRooms,GetRoomByID,SetRoomStatus } from './phandam_functions/room_functions';
+// import {Workflow} from './classes/Workflow';
+// import {With_Appointment_Workflow} from './classes/With_Appointment_Workflow';
+// import {Workflow_Queue} from './classes/Workflow_Queue';
+import {startWebsocketServer} from './api/websocket';
+// import {With_Appointment_Workflow} from './classes/With_Appointment_Workflow';
+//
+// let wf = new With_Appointment_Workflow(0);
+
 
 
 const app = express();
@@ -381,3 +389,10 @@ app.post("/api/room", async (req: Request, res: Response) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Website running at http://localhost:${PORT}`);
 });
+
+startWebsocketServer();
+
+
+
+// wss.start();
+// console.log('Websocket running on ws://localhost:3001');

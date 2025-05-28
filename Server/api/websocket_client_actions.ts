@@ -9,7 +9,8 @@ import { sleep } from '../phandam_modules/timing_utils';
 import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform } from '../phandam_modules/date_time_utils';
 import { getNextAppointment } from '../phandam_functions/appointment_functions';
 import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room_functions';
-// import { sleep } from '../phandam_functions/room_fuctions';
+import {Type_Validations} from '../classes/Type_Validations';
+import {Workflow_Queue} from '../classes/Workflow_Queue'
 import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure,SM_Persondata} from './websocket_messages';
 
 let nextAppointment:Date =new Date();
@@ -98,8 +99,10 @@ export async function voiceFileUploaded(){
     console.log('result: ' + JSON.stringify(Voice_Response.message.text.result));
     if(Voice_Response.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS')
     {
-        if(Voice_Response.message.text.firstname !== undefined)
+        if(!Type_Validations.isUndefined(Voice_Response.message.text.firstname))
         {
+        // if(Voice_Response.message.text.firstname !== undefined)
+        // {
         // let vorname = Voice_Response.message.text.firstname;
         // let nachname = Voice_Response.message.text.lastname;
         // let Geschlecht = Voice_Response.message.text.sex;
@@ -489,7 +492,7 @@ async function PatientAnlegen(){
   }
 }
 
-async function HasAppointment(bild_id:number):Promise<Boolean>{
+export async function HasAppointment(bild_id:number):Promise<Boolean>{
     return new Promise(async (resolve, reject) => {
     //TODO:Termin prüfen
     //ID von Gesichtserkennung abfragen
@@ -516,7 +519,7 @@ async function HasAppointment(bild_id:number):Promise<Boolean>{
     });
 }
 
-async function faceExists():Promise<any>{
+export async function faceExists():Promise<any>{
   return new Promise(async (resolve, reject) => {
   sendToClient(fixedValues.websocket_gesichtserkennungID,GE_Does_Face_Exist());
   // console.log('Respone Ge: ');

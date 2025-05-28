@@ -1,11 +1,19 @@
-import { WebSocketServer, WebSocket } from 'ws';
+import {WebSocketServer} from 'ws';
+// import { Server } from 'http';
 import fixedValues from '../phandam_modules/config';
 import {smartphone_wscom} from './websocket_client_actions';
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
+// import {Workflow} from '../classes/Workflow';
+import {With_Appointment_Workflow} from '../classes/With_Appointment_Workflow';
+import {Workflow_Queue} from '../classes/Workflow_Queue';
 
-const wss = new WebSocket.Server({ port: 3001 });
+export async function startWebsocketServer(){
 
-wss.on('connection', (ws:WebSocket) => {
+let wf:With_Appointment_Workflow = new With_Appointment_Workflow(1,'',''); //keine funktionale Wirkung, aber nötig da sonst Workflow erst nach dem Websocket importiert wird
+
+const wss = new WebSocketServer({ port: 3001 });
+
+wss.on('connection', (ws) => {
 
     console.log('Neuer Client verbunden');
 
@@ -57,27 +65,31 @@ wss.on('connection', (ws:WebSocket) => {
 
         if(matchingKeys[0]){
             if(matchingKeys[0] == fixedValues.websocket_smartphoneID){
-                console.log(`Received From ${fixedValues.websocket_smartphoneID}: ${message}`);
-                if(smartphone_wscom.IsMessageInit(message) == true)
-                {
-                    smartphone_wscom.InitActions(message);
-                }
-                else
-                {
-                    clients_lastmessage.set(fixedValues.websocket_smartphoneID,message);
-                }
+                recivedFormAuthenticatedClient(fixedValues.websocket_smartphoneID,message);
+                // console.log(`Received From ${fixedValues.websocket_smartphoneID}: ${message}`);
+                // if(smartphone_wscom.IsMessageInit(message) == true)
+                // {
+                //     smartphone_wscom.InitActions(message);
+                // }
+                // else
+                // {
+                //     clients_lastmessage.set(fixedValues.websocket_smartphoneID,message);
+                // }
             }
             else if(matchingKeys[0] == fixedValues.websocket_gesichtserkennungID){
-                console.log(`Received From ${fixedValues.websocket_gesichtserkennungID}: ${message}`);
-                clients_lastmessage.set(fixedValues.websocket_gesichtserkennungID,message);
+                recivedFormAuthenticatedClient(fixedValues.websocket_gesichtserkennungID,message);
+                // console.log(`Received From ${fixedValues.websocket_gesichtserkennungID}: ${message}`);
+                // clients_lastmessage.set(fixedValues.websocket_gesichtserkennungID,message);
             }
             else if(matchingKeys[0] == fixedValues.websocket_spracherkennungID){
-                console.log(`Received From ${fixedValues.websocket_spracherkennungID}: ${message}`);
-                clients_lastmessage.set(fixedValues.websocket_spracherkennungID,message);
+                recivedFormAuthenticatedClient(fixedValues.websocket_spracherkennungID,message);
+                // console.log(`Received From ${fixedValues.websocket_spracherkennungID}: ${message}`);
+                // clients_lastmessage.set(fixedValues.websocket_spracherkennungID,message);
             }
             else if(matchingKeys[0] == fixedValues.websocket_RoboterID){
-                console.log(`Received From ${fixedValues.websocket_RoboterID}: ${message}`);
-                clients_lastmessage.set(fixedValues.websocket_RoboterID,message);
+                recivedFormAuthenticatedClient(fixedValues.websocket_RoboterID,message);
+                // console.log(`Received From ${fixedValues.websocket_RoboterID}: ${message}`);
+                // clients_lastmessage.set(fixedValues.websocket_RoboterID,message);
             }
             else
             {
@@ -113,6 +125,31 @@ wss.on('connection', (ws:WebSocket) => {
     });
 });
 
-export default wss;
-
 console.log('Websocket running on ws://localhost:3001');
+}
+
+function recivedFormAuthenticatedClient(id:string,message:string){
+
+    console.log(`Received From ${id}: ${message}`);
+
+    if(id == fixedValues.websocket_smartphoneID){
+        if(smartphone_wscom.IsMessageInit(message) == true)
+        {
+            smartphone_wscom.InitActions(message);
+        }
+        else
+        {
+            clients_lastmessage.set(fixedValues.websocket_smartphoneID,message);
+        }
+    }
+
+    clients_lastmessage.set(id,message);
+
+    if(`${message}` != fixedValues.websocket_smartphoneID && `${message}` != fixedValues.websocket_gesichtserkennungID && `${message}` != fixedValues.websocket_spracherkennungID && `${message}` != fixedValues.websocket_RoboterID)
+    {
+    // let wf = new With_Appointment_Workflow(0);
+    Workflow_Queue.reciveMessage(id,JSON.parse(message));
+    }
+}
+
+// export default wss;
