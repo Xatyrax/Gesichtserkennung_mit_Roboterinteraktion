@@ -11,12 +11,12 @@ return new Promise(async (resolve, reject) => {
     try{
 
       let messageText = getLastMessage(senderID);
-      console.log('MessageText' + messageText);
+      // console.log('MessageText: ' + messageText);
       let message = senderID + ': ' + messageText;
       // console.log(message);
       const parsedjson = JSON.parse(messageText);
       //TODO: event raus
-      if(parsedjson.type != null || parsedjson.event != null)
+      if(parsedjson.type != null || parsedjson.event != null || parsedjson.Type != null)
       {
           resolve(parsedjson);
           break;
