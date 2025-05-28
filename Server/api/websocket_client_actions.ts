@@ -369,7 +369,7 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
         let Drive_Response_ToWaitingroom:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
         console.log(Drive_Response_ToWaitingroom);
         if(Drive_Response_ToWaitingroom == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
-        if(Drive_Response_ToWaitingroom.type=='PICK_PATIENT_ANSWER')
+        if(Drive_Response_ToWaitingroom.Type=='DRIVE_TO_ROOM_ANSWER')
         {
           if(Drive_Response_ToWaitingroom.Answer != 'TRUE'){
             console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');
