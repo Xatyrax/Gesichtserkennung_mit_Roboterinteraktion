@@ -21,6 +21,7 @@ return new Promise(async (resolve, reject) => {
       }
     }catch{}
     await sleep();
+    console.log('Nachricht verarbeitet')
   }
 resolve(null);
 });

@@ -386,14 +386,22 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
         sendToClient(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
         console.log("Nachricht an Roboter gesendet");
 
+        while(true){
         let Drive_Response:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
         if(Drive_Response == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
         if(Drive_Response.type=='DRIVE_TO_ROOM_ANSWER')
         {
-          if(Drive_Response.Answer != 'TRUE'){
+          if(Drive_Response.Answer == 'TRUE')
+          {
+            break;
+          }
+          else if(Drive_Response.Answer == 'FALSE'){
             console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');
             return;
           }
+
+        }
+
         }
         else
         {console.log('Ungültige Antwort vom Roboter nachdem er losgeschickt wurde');return;}
