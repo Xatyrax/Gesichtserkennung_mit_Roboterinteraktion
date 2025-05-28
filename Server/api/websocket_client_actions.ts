@@ -399,13 +399,11 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
             console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');
             return;
           }
-
         }
 
+        // else
+        // {console.log('Ungültige Antwort vom Roboter nachdem er losgeschickt wurde');return;}
         }
-        else
-        {console.log('Ungültige Antwort vom Roboter nachdem er losgeschickt wurde');return;}
-
         console.log("Patient abgeliefert");
         });
 }
