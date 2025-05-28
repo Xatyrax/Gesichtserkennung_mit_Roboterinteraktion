@@ -400,6 +400,8 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
         {
           if(Drive_Response.Answer == 'TRUE')
           {
+            console.log('Robobter angekommen');
+            sendToClient(fixedValues.websocket_smartphoneID,'{"type":"REACHED_GOAL"}');
             break;
           }
           else if(Drive_Response.Answer == 'FALSE'){
