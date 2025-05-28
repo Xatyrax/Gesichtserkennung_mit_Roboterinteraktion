@@ -288,7 +288,7 @@ export async function faceFileUploaded(){
           else {console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');}
         }
         else
-        {console.log('continue';continue;}
+        {console.log('continue');continue;}
         }
       }
       else
