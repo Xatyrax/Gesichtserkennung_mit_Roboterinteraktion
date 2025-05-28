@@ -389,7 +389,7 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
         while(true){
         let Drive_Response:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
         if(Drive_Response == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
-        if(Drive_Response.type=='DRIVE_TO_ROOM_ANSWER')
+        if(Drive_Response.Type=='DRIVE_TO_ROOM_ANSWER')
         {
           if(Drive_Response.Answer == 'TRUE')
           {
