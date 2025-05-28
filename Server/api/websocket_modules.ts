@@ -19,14 +19,14 @@ export function sendToClient(id:string, data:string) {
 }
 
 export function getLastMessage(id:string):string {
-    console.log("getting lastmessage from: " + id)
+    // console.log("getting lastmessage from: " + id)
     let message = clients_lastmessage.get(id);
     let ret = fixedValues.NotUsedVariableString;
     if(message){
         ret = message;
     }
-    console.log("Received bad message: " + message)
-    console.log("from: " + id)
+    // console.log("Received bad message: " + message)
+    // console.log("from: " + id)
     clients_lastmessage.set(id,fixedValues.NotUsedVariableString);
     return ret;
 }

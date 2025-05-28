@@ -5,7 +5,7 @@ import { sleep } from '../phandam_modules/timing_utils';
 export async function waitForMessage(senderID:string, waitInSeconds:number):Promise<any | null>{
 return new Promise(async (resolve, reject) => {
     await sleep()
-    console.log("Waiting for message from: " + senderID)
+    // console.log("Waiting for message from: " + senderID)
     for (let i = 0; i < waitInSeconds; i++) {
         await sleep()
     try{
@@ -21,7 +21,7 @@ return new Promise(async (resolve, reject) => {
       }
     }catch{}
     await sleep();
-    console.log('Nachricht verarbeitet')
+    // console.log('Nachricht verarbeitet');
   }
 resolve(null);
 });

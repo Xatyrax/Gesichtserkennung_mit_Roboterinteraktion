@@ -275,19 +275,21 @@ export async function faceFileUploaded(){
           let sqlcommand = "INSERT INTO Patients_Rooms (RoomID, PatientID) VALUES (?,?)";
           sql_execute_write(sqlcommand,data);
         }
+        while(true){
         let Drive_Response:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
         if(Drive_Response == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
-        if(Drive_Response.type=='DRIVE_TO_ROOM_ANSWER')
+        if(Drive_Response.Type=='DRIVE_TO_ROOM_ANSWER')
         {
           if(Drive_Response.Answer == 'TRUE'){
             console.log('Patient mit Termin wurde weitergeleitet!');
-
+            sendToClient(fixedValues.websocket_smartphoneID,'{"type":"REACHED_GOAL"}');
+            break;
           }
           else {console.log('Fehler beim Roboter. Ziel kann nicht erreicht werden!');}
         }
         else
-        {console.log('Ungültige Antwort vom Roboter nachdem er losgeschickt wurde');}
-
+        {console.log('continue';continue;}
+        }
       }
       else
       {
