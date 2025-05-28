@@ -254,17 +254,17 @@ export async function faceFileUploaded(){
         console.log('Der Patient hat einen Termin.');
         sendToClient(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
         let Raeume = await GetAllRooms();
-        if(Raeume[0].Free == true)
+        if(Raeume[1].Free == true)
         {
           sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
           await SetRoomStatus(Raeume[0].RoomID,false);
         }
-        else if(Raeume[1].Free == true)
+        else if(Raeume[2].Free == true)
         {
           sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B2'));
           await SetRoomStatus(Raeume[1].RoomID,false);
         }
-        else if(Raeume[2].Free == true)
+        else if(Raeume[3].Free == true)
         {
           sendToClient(fixedValues.websocket_RoboterID,DriveToTarget('B3'));
           await SetRoomStatus(Raeume[2].RoomID,false);
@@ -358,9 +358,9 @@ export async function TakePatientFromWatingRoom(patientID:number):Promise<Boolea
         sendToClient(fixedValues.websocket_RoboterID,DriveToPickUpPatient());
         console.log("Nachricht an Roboter gesendet");
         // TODO test log
-        console.log("Patient soll in zimmer " + roomKey_result[0].RoomKey + "gefahren werden")
-        let Drive_Response_ToWaitingroom:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden)
-        console.log(Drive_Response_ToWaitingroom)
+        console.log("Patient soll in zimmer " + roomKey_result[0].RoomKey + "gefahren werden");
+        let Drive_Response_ToWaitingroom:(any | null) = await waitForMessage(fixedValues.websocket_RoboterID,fixedValues.TimeoutRoboterInSekunden);
+        console.log(Drive_Response_ToWaitingroom);
         if(Drive_Response_ToWaitingroom == null){sendToClient(fixedValues.websocket_RoboterID,Ro_Failure('Timeout!'));return;}
         if(Drive_Response_ToWaitingroom.type=='PICK_PATIENT_ANSWER')
         {

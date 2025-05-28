@@ -3,7 +3,7 @@ import {TakePatientFromWatingRoom} from '../api/websocket_client_actions';
 
 export async function GetAllRooms():Promise<any>{
     return new Promise(async (resolve, reject) => {
-        let RaumDaten:any = await sql_execute(`SELECT RoomID, RoomName, Free FROM Rooms;`);
+        let RaumDaten:any = await sql_execute(`SELECT RoomID, RoomName, Free,RoomKey FROM Rooms;`);
         for (let i = 0; i < RaumDaten.length; i++) {
             let Roomstatus:number = JSON.parse(JSON.stringify(RaumDaten[i].Free)).data;
             RaumDaten[i].Free = Roomstatus == 1 ? true : false;
