@@ -1,4 +1,6 @@
 import {WebSocketServer} from 'ws';
+import {ConsoleLogger} from '../classes/ConsoleLogger';
+import {Type_Validations} from '../classes/Type_Validations';
 // import { Server } from 'http';
 import fixedValues from '../phandam_modules/config';
 import {smartphone_wscom} from './websocket_client_actions';
@@ -7,9 +9,13 @@ import {clients,clients_lastmessage,sendToClient, getLastMessage } from './webso
 import {With_Appointment_Workflow} from '../classes/With_Appointment_Workflow';
 import {Workflow_Queue} from '../classes/Workflow_Queue';
 
+
 export async function startWebsocketServer(){
 
+ConsoleLogger.logDebug('Der folgende Workflow wird nur aus Abhängigkeitsgründen benötigt und erfüllt keine funktionale Wirkung');
 let wf:With_Appointment_Workflow = new With_Appointment_Workflow(1,'',''); //keine funktionale Wirkung, aber nötig da sonst Workflow erst nach dem Websocket importiert wird
+Workflow_Queue.queue.push(wf);
+Workflow_Queue.ShutdownWorkflow(wf.getid());
 
 const wss = new WebSocketServer({ port: 3001 });
 
@@ -91,10 +97,10 @@ wss.on('connection', (ws) => {
                 // console.log(`Received From ${fixedValues.websocket_RoboterID}: ${message}`);
                 // clients_lastmessage.set(fixedValues.websocket_RoboterID,message);
             }
-            else
-            {
-                console.log(`Received From Unknown Client: ${message}`);
-            }
+            // else
+            // {
+            //     console.log(`Received From Unknown Client: ${message}`);
+            // }
         }
 
     });
@@ -105,19 +111,19 @@ wss.on('connection', (ws) => {
         const gesichtserkennung = clients.get(fixedValues.websocket_gesichtserkennungID);
         const spracherkennung = clients.get(fixedValues.websocket_spracherkennungID);
         const roboter = clients.get(fixedValues.websocket_RoboterID);
-        if(typeof smartphone !== 'undefined')
+        if(Type_Validations.isUndefined(typeof smartphone))
         {
             clients.delete(fixedValues.websocket_smartphoneID);
         }
-        if(typeof gesichtserkennung !== 'undefined')
+        if(Type_Validations.isUndefined(typeof gesichtserkennung))
         {
             clients.delete(fixedValues.websocket_gesichtserkennungID);
         }
-        if(typeof spracherkennung !== 'undefined')
+        if(Type_Validations.isUndefined(typeof spracherkennung))
         {
             clients.delete(fixedValues.websocket_spracherkennungID);
         }
-        if(typeof roboter !== 'undefined')
+        if(Type_Validations.isUndefined(typeof roboter))
         {
             clients.delete(fixedValues.websocket_RoboterID);
         }
@@ -147,8 +153,9 @@ function recivedFormAuthenticatedClient(id:string,message:string){
 
     if(`${message}` != fixedValues.websocket_smartphoneID && `${message}` != fixedValues.websocket_gesichtserkennungID && `${message}` != fixedValues.websocket_spracherkennungID && `${message}` != fixedValues.websocket_RoboterID)
     {
-    // let wf = new With_Appointment_Workflow(0);
-    Workflow_Queue.reciveMessage(id,JSON.parse(message));
+        try{JSON.parse(message)}
+        catch{ConsoleLogger.logWarning(`Die Nachricht ${message} ist kein gültiges JSON Format. Nachricht wird ignoriert.`); return;}
+        Workflow_Queue.reciveMessage(id,JSON.parse(message));
     }
 }
 

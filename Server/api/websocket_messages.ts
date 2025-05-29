@@ -22,6 +22,8 @@ export function SM_Audio_GenerationSuccess():string{return `{"type":"AUDIO_GENER
 //Smartphone Timeout (Debug: 5)
 export function SM_Audio_GenerationFailure(fehlermeldung: string):string{return `{"type":"AUDIO_GENERATION_REQUEST_FAILURE", "message":"${fehlermeldung}"}`;}
 
+export function SM_ReachedGoal(arrived:boolean):string{return `{"type":"ROBOT_REACHED_GOAL","success":"${arrived == true ? 'TRUE' : 'FALSE'}"}`;}
+
 export function SM_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
 
 export function SM_Extract_From_Audio_Success():string{return `{"type":"EXTRACT_DATA_FROM_AUDIO_SUCCESS","message":"YES"}`;}
@@ -85,4 +87,4 @@ export function Ro_Failure(errorMessage:string):string{return `{"Type":"FAILURE"
 
 //export default;
 
-export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure,SM_Persondata};
+export default {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Face_Timeout,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure,SM_Persondata,SM_ReachedGoal};

@@ -1,5 +1,6 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import fixedValues from '../phandam_modules/config';
+import {ConsoleLogger} from '../classes/ConsoleLogger';
 
 export const clients = new Map();
 export const clients_lastmessage = new Map([
@@ -9,12 +10,33 @@ export const clients_lastmessage = new Map([
     [fixedValues.websocket_RoboterID,'']
 ]);
 
-export function sendToClient(id:string, data:string) {
+//"UDP" (fire and forget)
+export function sendToClient(id:string, data:string):void {
 
     const client = clients.get(id);
     if (client && client.readyState === WebSocket.OPEN) {
         client.send(data);
-        console.log(`Send to ${id}: ${data}`);
+        ConsoleLogger.logDebugNeutral(`Sende an ${id}: ${data}`);
+    }
+    else
+    {
+        ConsoleLogger.logWarning(`Nachricht an ${id} nicht versendet, weil der Client nicht verbunden oder empfangsbereit ist`);
+    }
+}
+
+//"TCP" (fire and watch)
+export function sendToClientWithConfirmation(id:string, data:string):boolean {
+
+    const client = clients.get(id);
+    if (client && client.readyState === WebSocket.OPEN) {
+        client.send(data);
+        ConsoleLogger.logDebugNeutral(`Sende an ${id}: ${data}`);
+        return true;
+    }
+    else
+    {
+        ConsoleLogger.logWarning(`Nachricht an ${id} nicht versendet, weil der Client nicht verbunden oder empfangsbereit ist`);
+        return false;
     }
 }
 

@@ -212,8 +212,8 @@ export async function voiceFileUploaded(){
   // sendToClient(fixedValues.websocket_smartphoneID,smartphoneresponse);
   // sendToClient(fixedValues.websocket_spracherkennungID,'Timeout');
 }
-
-export async function faceFileUploaded(){
+export async function faceFileUploaded(){}
+async function faceFileUploaded2(){
 
   //Ist der Patient bekannt?
   // let Face_Exists_Response: any;
@@ -241,6 +241,7 @@ export async function faceFileUploaded(){
     }
     if(Face_Exists_Response.filename.endsWith('.jpeg') || Face_Exists_Response.filename.endsWith('.png'))
     {
+      console.log('Dateiendung wurde entfernt');
       Face_Exists_Response.filename = Face_Exists_Response.filename.split('.')[0];
     }
 
@@ -505,11 +506,11 @@ export async function HasAppointment(bild_id:number):Promise<Boolean>{
 
     let Termine:any;
     try{
-      console.log(bild_id);
+      // console.log(bild_id);
     let getAppoinmentsCommand = `Select AppointmentID From Appointments WHERE PatientID = ${bild_id} AND Start > '${convertDateToUString(maxFrüh,true)}' AND Start < '${convertDateToUString(maxSpät,true)};'`;
-    console.log(getAppoinmentsCommand);
+    // console.log(getAppoinmentsCommand);
     Termine = await sql_execute(getAppoinmentsCommand);
-    console.log(Termine);
+    // console.log(Termine);
     } catch(error){console.log(`ID kann nicht zugeordnet werden. Fehler: ${error}`);reject(error);}
 
     if(Termine.length > 0)
@@ -521,7 +522,7 @@ export async function HasAppointment(bild_id:number):Promise<Boolean>{
 
 export async function faceExists():Promise<any>{
   return new Promise(async (resolve, reject) => {
-  sendToClient(fixedValues.websocket_gesichtserkennungID,GE_Does_Face_Exist());
+  // sendToClient(fixedValues.websocket_gesichtserkennungID,GE_Does_Face_Exist());
   // console.log('Respone Ge: ');
   let Face_Exists_Response:(any | null) = await waitForMessage(fixedValues.websocket_gesichtserkennungID,fixedValues.TimeoutGesichtInSekunden);
   if(Face_Exists_Response == null){sendToClient(fixedValues.websocket_smartphoneID,SM_Face_Timeout());reject(false);return;}
@@ -531,14 +532,13 @@ export async function faceExists():Promise<any>{
   // try{ console.log('Respone Ge: ' + JSON.stringify(Face_Exists_Response));}
   // catch(error){throw new Error('Falsches JSON Format. Fehler: ' + error);}
 
-  console.log('Gesichtsprüfung: ' + JSON.stringify(Face_Exists_Response));
+  // console.log('Gesichtsprüfung: ' + JSON.stringify(Face_Exists_Response));
    if(Face_Exists_Response.result == 'Kein Gesicht im Bild erkannt' || Face_Exists_Response.result == 'Datei ist kein Bild' || Face_Exists_Response.result == 'Gesicht nicht erkannt' || Face_Exists_Response.result == 'skip'){
       Face_Exists_Response.result = false;
       resolve(Face_Exists_Response);
       return;
   }
 
-  //TODO: Nach Debug wieder raus
   if(Face_Exists_Response.result == 'Gesicht erkannt'){
     Face_Exists_Response.result = true;
     resolve(Face_Exists_Response);
