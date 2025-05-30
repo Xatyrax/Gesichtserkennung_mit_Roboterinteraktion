@@ -135,10 +135,13 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                 ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Audiodatei wurde generiert`);
                 await sleep(10);
                 await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Audio_GenerationSuccess(),this);
+
+                ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout Rücksetzung starten`);
+                this.next();
                 ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout starten`);
                 this.waitForTimeout();
-                ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout Rücksetzung gestartet`);
-                this.next();
+
+
         });
     }
 
@@ -155,6 +158,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
 
      private async PhoneRemoved(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
+            ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Behandlungszimmerauswahl gestartet`);
             let sql_Command_GetRoomKey = 'Select RoomKey From Rooms WHERE Free = 1;';
             let roomKey_result:any = await sql_execute(sql_Command_GetRoomKey);
             if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
@@ -162,6 +166,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
 
             await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
             ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Roboter ins Behandlungszimmer losgeschickt`);
+            this.next();
         });
     }
 
@@ -186,7 +191,9 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             await sleep();
         }
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
+        ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Next Step: ${(this._WorkflowSteps as Workflow_Step[])[4]}`);
         this._currentStep = (this._WorkflowSteps as Workflow_Step[])[4];
-        this.next();
+        this._currentStep.execute('','');
+        // this.next();
     }
 }

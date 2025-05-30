@@ -41,7 +41,7 @@ export class Unknown_Customer_Workflow extends Workflow{
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsUnknown',null,null);
         let wfsWaitPerData:Workflow_Step = new Workflow_Step('WatingForPersonData',fixedValues.websocket_spracherkennungID,'EXTRACT_DATA_FROM_AUDIO_SUCCESS');
         let wfsWaitPerDataConfirm:Workflow_Step = new Workflow_Step('WatingForPersonDataConfirmation',fixedValues.websocket_smartphoneID,'DATA_CONFIRMATION');
-        // let wfsWaitForNextApoConfirmation:Workflow_Step = new Workflow_Step('WatingForNextAppointmentConfirmation',fixedValues.websocket_smartphoneID,'DATA_CONFIRMATION');
+        let wfsWaitForNextApoConfirmation:Workflow_Step = new Workflow_Step('WatingForNextAppointmentConfirmation',fixedValues.websocket_smartphoneID,'DATA_CONFIRMATION');
 
         // let wfsWaitGesSaveConfirm:Workflow_Step = new Workflow_Step('WatingForFaceSaveConfirmation',fixedValues.websocket_spracherkennungID,'EXTRACT_DATA_FROM_AUDIO_SUCCESS');
 
@@ -52,10 +52,14 @@ export class Unknown_Customer_Workflow extends Workflow{
         steps.push(wfsWaitPerData);
         wfsWaitPerDataConfirm.execute = this.watingForPersonDataConfirm.bind(this);
         steps.push(wfsWaitPerDataConfirm);
+        wfsWaitForNextApoConfirmation.execute = this.watingForPersonDataConfirm.bind(this);
+        steps.push(wfsWaitForNextApoConfirmation);
 
         //Reihnfolge
         wfsStart.nextStep = wfsWaitPerData;
         wfsWaitPerData.nextStep = wfsWaitPerDataConfirm;
+        wfsWaitPerDataConfirm.nextStep = wfsWaitForNextApoConfirmation;
+
         // wfsWaitPerDataConfirm.nextStep = wfsWaitGesSaveConfirm;
 
         //Startpunkt
@@ -128,6 +132,12 @@ export class Unknown_Customer_Workflow extends Workflow{
                     this.next();
                 }
             }
+        });
+    }
+
+    private async wfsWaitForNextApoConfirmation(sender:string,message:any):Promise<void>{
+        return new Promise(async (resolve, reject) => {
+
         });
     }
 }
