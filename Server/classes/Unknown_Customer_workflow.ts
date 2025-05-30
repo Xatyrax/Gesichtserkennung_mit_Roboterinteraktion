@@ -41,6 +41,8 @@ export class Unknown_Customer_Workflow extends Workflow{
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsUnknown',null,null);
         let wfsWaitPerData:Workflow_Step = new Workflow_Step('WatingForPersonData',fixedValues.websocket_spracherkennungID,'EXTRACT_DATA_FROM_AUDIO_SUCCESS');
         let wfsWaitPerDataConfirm:Workflow_Step = new Workflow_Step('WatingForPersonDataConfirmation',fixedValues.websocket_smartphoneID,'DATA_CONFIRMATION');
+        // let wfsWaitForNextApoConfirmation:Workflow_Step = new Workflow_Step('WatingForNextAppointmentConfirmation',fixedValues.websocket_smartphoneID,'DATA_CONFIRMATION');
+
         // let wfsWaitGesSaveConfirm:Workflow_Step = new Workflow_Step('WatingForFaceSaveConfirmation',fixedValues.websocket_spracherkennungID,'EXTRACT_DATA_FROM_AUDIO_SUCCESS');
 
         //Stepeigenschaften

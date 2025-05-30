@@ -186,7 +186,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             await sleep();
         }
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
-        this._currentStep = (this._WorkflowSteps as Workflow_Step[])[5];
+        this._currentStep = (this._WorkflowSteps as Workflow_Step[])[4];
         this.next();
     }
 }
