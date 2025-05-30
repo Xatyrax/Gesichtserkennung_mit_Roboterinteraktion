@@ -115,6 +115,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             }
         });
     }
+
     private async watingForSpeechResponse(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
 
@@ -167,6 +168,9 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
 
             Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Phone_Back(),this);
             await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
+
+
+
             ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Roboter ins Behandlungszimmer losgeschickt`);
             this.next();
         });
