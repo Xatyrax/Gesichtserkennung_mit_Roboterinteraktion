@@ -133,11 +133,11 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                     await sleep();
                 }
                 ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Audiodatei wurde generiert`);
-                await sleep(10);
+                // await sleep(10);
                 await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Audio_GenerationSuccess(),this);
-
+                ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout starten`);
                 this.waitForTimeout();
-
+                ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout Rücksetzung gestartet`);
                 this.next();
         });
     }
