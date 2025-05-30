@@ -32,6 +32,8 @@ export function SM_Extract_From_Audio_Yes():string{return SM_Extract_From_Audio_
 
 export function SM_Extract_From_Audio_No():string{return SM_Extract_From_Audio_YesOrNo(false);}
 
+export function SM_Extract_From_Audio_Success():string{return `{"type":"PHONE_IS_BACK"}`;}
+
 export function SM_Failure(errorMessage:string):string{return `{"type":"FAILURE","message":"${errorMessage}"}`;}
 
 

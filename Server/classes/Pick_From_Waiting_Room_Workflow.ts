@@ -9,7 +9,7 @@ import {sleep} from '../phandam_modules/timing_utils';
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
 import {Workflow_Communication} from './Workflow_Communication';
-import {SM_ReachedGoal,SP_Audio_Genaration_Request,DriveToTarget,SM_Audio_GenerationSuccess,DriveToPickUpPatient} from '../api/websocket_messages';
+import {SM_ReachedGoal,SP_Audio_Genaration_Request,DriveToTarget,SM_Audio_GenerationSuccess,DriveToPickUpPatient,SM_Phone_Back} from '../api/websocket_messages';
 
 
 
@@ -165,6 +165,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
             {console.log('Fehler beim Abrufen des Raumschlüssels. Ungültiger Raumschlüssel von der DB erhalten.')}
 
+            Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Phone_Back(),this);
             await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
             ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Roboter ins Behandlungszimmer losgeschickt`);
             this.next();
