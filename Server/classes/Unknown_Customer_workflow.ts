@@ -9,7 +9,7 @@ import {convertDateToSmartphoneDate} from '../phandam_modules/date_time_utils';
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
 import {Workflow_Communication} from './Workflow_Communication';
-import {SM_Face_UnknownPatient,SM_Persondata,GE_New_Patient,SM_Failure} from '../api/websocket_messages';
+import {SM_Face_UnknownPatient,SM_Persondata,GE_New_Patient,SM_Failure,SM_Extract_From_Audio_Yes} from '../api/websocket_messages';
 
 
 
@@ -52,7 +52,7 @@ export class Unknown_Customer_Workflow extends Workflow{
         steps.push(wfsWaitPerData);
         wfsWaitPerDataConfirm.execute = this.watingForPersonDataConfirm.bind(this);
         steps.push(wfsWaitPerDataConfirm);
-        wfsWaitForNextApoConfirmation.execute = this.watingForPersonDataConfirm.bind(this);
+        wfsWaitForNextApoConfirmation.execute = this.wfsWaitForNextApoConfirmation.bind(this);
         steps.push(wfsWaitForNextApoConfirmation);
 
         //Reihnfolge
@@ -107,6 +107,14 @@ export class Unknown_Customer_Workflow extends Workflow{
                 {
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patientendaten angenommen. Patient wird gespeichert.`);
                     await Workflow_Communication.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient());
+
+                    let nextAppointment:Date = await getNextAppointment();
+                    let date:string = convertDateToSmartphoneDate(nextAppointment);
+                    let time:string = convertDateToSmartphoneTime(nextAppointment);
+                    let weekday:string = convertDateToWeekdayShortform(nextAppointment);
+
+                    await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
+
                     this.next();
                 }
                 else if(message.Answer == 'FALSE')
@@ -129,6 +137,7 @@ export class Unknown_Customer_Workflow extends Workflow{
                 {
                     Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Failure(`Von ${sender} wurde eine Nachricht gesendet die den richtigen type hat, aber die der Workflow an dieser Stelle nicht benötigt.`));
                     ConsoleLogger.logError(`${this.constructor.name} ${this._id} ist verwirrt! Von ${sender} wurde eine Nachricht gesendet die den richtigen type hat, aber die der Workflow an dieser Stelle nicht benötigt.`);
+
                     this.next();
                 }
             }
@@ -137,7 +146,14 @@ export class Unknown_Customer_Workflow extends Workflow{
 
     private async wfsWaitForNextApoConfirmation(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
-
+            if(message.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS'){
+                if(message.message.text.result == 'YES')
+                {
+                    Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes());
+                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin angenommen`);
+                    this.next();
+                }
+            }
         });
     }
 }
