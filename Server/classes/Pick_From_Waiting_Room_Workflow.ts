@@ -16,12 +16,14 @@ import {SM_ReachedGoal,SP_Audio_Genaration_Request,DriveToTarget,SM_Audio_Genera
 export class Pick_From_Waiting_Room_Workflow extends Workflow{
 
     private _patientenID:number;
+    private _timeout:number;
 
     constructor(timeoutTimer:number,sender:string,message:any)
     {
         super(timeoutTimer);
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu Pick_From_Waiting_Room_Workflow`);
         this._patientenID = 0;
+        this._timeout = 0;
         try{
 
         this._WorkflowSteps = this.createWorkflowsteps();
@@ -45,7 +47,8 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsPickPatient',null,null);
         let wfsWaitUntilWaitingroom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInWatingroom',fixedValues.websocket_RoboterID,'PICK_PATIENT_ANSWER');
         let wfsWaitForSpeech:Workflow_Step = new Workflow_Step('WatingForSpeechResponse','','');
-        let wfsWaitForSmart:Workflow_Step = new Workflow_Step('WatingForSmartphoneResponse',fixedValues.websocket_smartphoneID,'AUDIO_GENERATION_REQUEST_SUCCESS_ANSWER');
+        let wfsWaitForResTimeout:Workflow_Step = new Workflow_Step('watingForResetTimeout',fixedValues.websocket_RoboterID,'ERROR_PHONE_NOT_REMOVED');
+        let wfsPhoneRemovedAction:Workflow_Step = new Workflow_Step('PhoneRemovedAction','','');
         let wfsWaitUntilTreRoom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInRoom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
 
         //Stepeigenschaften
@@ -55,15 +58,19 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         steps.push(wfsWaitUntilWaitingroom);
         wfsWaitForSpeech.execute = this.watingForSpeechResponse.bind(this);
         steps.push(wfsWaitForSpeech);
-        wfsWaitForSmart.execute = this.watingForSmartphoneResponse.bind(this);
-        steps.push(wfsWaitForSmart);
+        wfsWaitForResTimeout.execute = this.watingForResetTimeout.bind(this);
+        steps.push(wfsWaitForResTimeout);
+        wfsPhoneRemovedAction.execute = this.PhoneRemoved.bind(this);
+        steps.push(wfsPhoneRemovedAction);
         wfsWaitUntilTreRoom.execute = this.watingForRobotArivalInRoom.bind(this);
         steps.push(wfsWaitUntilTreRoom);
 
         //Reihnfolge
         wfsStart.nextStep = wfsWaitUntilWaitingroom;
         wfsWaitUntilWaitingroom.nextStep = wfsWaitForSpeech;
-        wfsWaitForSpeech.nextStep = wfsWaitUntilTreRoom;
+        wfsWaitForSpeech.nextStep = wfsWaitForResTimeout;
+        wfsWaitForResTimeout.nextStep = wfsPhoneRemovedAction;
+        wfsPhoneRemovedAction.nextStep = wfsWaitUntilTreRoom;
         // wfsWaitForSpeech.nextStep = wfsWaitForSmart;
         // wfsWaitForSmart.nextStep = wfsWaitUntilTreRoom;
 
@@ -129,34 +136,35 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                 await sleep(10);
                 await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Audio_GenerationSuccess(),this);
 
-                let sql_Command_GetRoomKey = 'Select RoomKey From Rooms WHERE Free = 1;';
-                let roomKey_result:any = await sql_execute(sql_Command_GetRoomKey);
-                if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
-                {console.log('Fehler beim Abrufen des Raumschlüssels. Ungültiger Raumschlüssel von der DB erhalten.')}
-
-                await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
-                ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Roboter ins Behandlungszimmer losgeschickt`);
+                this.waitForTimeout();
 
                 this.next();
         });
     }
-    private async watingForSmartphoneResponse(sender:string,message:any):Promise<void>{
-        return new Promise(async (resolve, reject) => {
-            if(message.type == 'AUDIO_GENERATION_REQUEST_SUCCESS_ANSWER'){
-                if(message.message == 'TRUE')
-                {
-                    let sql_Command_GetRoomKey = 'Select RoomKey From Rooms WHERE Free = 1;';
-                    let roomKey_result:any = await sql_execute(sql_Command_GetRoomKey);
-                    if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
-                    {console.log('Fehler beim Abrufen des Raumschlüssels. Ungültiger Raumschlüssel von der DB erhalten.')}
 
-                    await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
-                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Roboter ins Behandlungszimmer losgeschickt`);
+    private async watingForResetTimeout(sender:string,message:any):Promise<void>{
+        return new Promise(async (resolve, reject) => {
+            if(message.type == 'ERROR_PHONE_NOT_REMOVED'){
+                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Reset Timeout`);
+                    this._timeout = 0;
+                    this._currentStep = (this._WorkflowSteps as Workflow_Step[])[3];
                     this.next();
-                }
             }
         });
     }
+
+     private async PhoneRemoved(sender:string,message:any):Promise<void>{
+        return new Promise(async (resolve, reject) => {
+            let sql_Command_GetRoomKey = 'Select RoomKey From Rooms WHERE Free = 1;';
+            let roomKey_result:any = await sql_execute(sql_Command_GetRoomKey);
+            if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
+            {console.log('Fehler beim Abrufen des Raumschlüssels. Ungültiger Raumschlüssel von der DB erhalten.')}
+
+            await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
+            ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Roboter ins Behandlungszimmer losgeschickt`);
+        });
+    }
+
     private async watingForRobotArivalInRoom(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
             if(message.type == 'DRIVE_TO_ROOM_ANSWER'){
@@ -168,5 +176,14 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                 }
             }
         });
+    }
+
+    private async waitForTimeout():Promise<void>{
+        while(this._timeout < 13){
+            await sleep();
+        }
+        ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
+        this._currentStep = (this._WorkflowSteps as Workflow_Step[])[5];
+        this.next();
     }
 }
