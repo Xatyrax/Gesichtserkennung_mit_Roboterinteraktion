@@ -44,8 +44,8 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
 
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsPickPatient',null,null);
         let wfsWaitUntilWaitingroom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInWatingroom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
-        let wfsWaitForSpeech:Workflow_Step = new Workflow_Step('WatingForSpeechResponse',fixedValues.websocket_spracherkennungID,'DRIVE_TO_ROOM_ANSWER');
-        let wfsWaitForSmart:Workflow_Step = new Workflow_Step('WatingForSmartphoneResponse',fixedValues.websocket_smartphoneID,'DRIVE_TO_ROOM_ANSWER');
+        let wfsWaitForSpeech:Workflow_Step = new Workflow_Step('WatingForSpeechResponse','','');
+        let wfsWaitForSmart:Workflow_Step = new Workflow_Step('WatingForSmartphoneResponse',fixedValues.websocket_smartphoneID,'AUDIO_GENERATION_REQUEST_SUCCESS_ANSWER');
         let wfsWaitUntilTreRoom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInRoom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
 
         //Stepeigenschaften
@@ -94,7 +94,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                     let sql_Command = 'Select Firstname, Lastname From Patients';
                     let Patienname:any = await sql_execute(sql_Command);
 
-                    console.log(fixedValues.generierteAudio_pfad);
+                    // console.log(fixedValues.generierteAudio_pfad);
                     //Datei löschen wenn existent
                     if (fs.existsSync(fixedValues.generierteAudio_pfad)) {
                         fs.unlinkSync(fixedValues.generierteAudio_pfad);
@@ -104,6 +104,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                     await Workflow_Communication.sendMessage(fixedValues.websocket_spracherkennungID,SP_Audio_Genaration_Request(`${Patienname[0].Firstname} ${Patienname[0].Lastname} folgen Sie mir bitte ins Behandlungszimmer`),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: In Wartezimmer angekommen`);
                     this.next();
+                    this._currentStep.execute('','');
                 }
             }
         });
@@ -111,7 +112,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
     private async watingForSpeechResponse(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
 
-                console.log('start');
+                // console.log('start');
                 //Auf Generierung warten
                 console.log(fixedValues.generierteAudio_pfad);
                 for (let i = 0; i < fixedValues.TimeoutAudiogenerierungInSekunden; i++) {
@@ -133,7 +134,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
     private async watingForSmartphoneResponse(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
             if(message.type == 'AUDIO_GENERATION_REQUEST_SUCCESS_ANSWER'){
-                if(message.Answer == 'TRUE')
+                if(message.message == 'TRUE')
                 {
                     let sql_Command_GetRoomKey = 'Select RoomKey From Rooms WHERE Free = 1;';
                     let roomKey_result:any = await sql_execute(sql_Command_GetRoomKey);
