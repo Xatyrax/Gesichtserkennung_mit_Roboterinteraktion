@@ -9,7 +9,7 @@ import {sleep} from '../phandam_modules/timing_utils';
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
 import {Workflow_Communication} from './Workflow_Communication';
-import {SM_ReachedGoal,SP_Audio_Genaration_Request,DriveToTarget,SM_Audio_GenerationSuccess} from '../api/websocket_messages';
+import {SM_ReachedGoal,SP_Audio_Genaration_Request,DriveToTarget,SM_Audio_GenerationSuccess,DriveToPickUpPatient} from '../api/websocket_messages';
 
 
 
