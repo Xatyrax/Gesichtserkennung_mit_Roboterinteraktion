@@ -4,12 +4,10 @@ import { sql_execute, sql_execute_write } from '../phandam_modules/db_utils';
 import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room_functions';
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
-import {Workflow_Queue} from './Workflow_Queue';
-
-
-
-
+import {Workflow_Communication} from './Workflow_Communication';
 import {SM_Face_KnownPatient_WithAppointment,DriveToTarget,SM_ReachedGoal} from '../api/websocket_messages';
+
+
 
 export class With_Appointment_Workflow extends Workflow{
 
@@ -40,11 +38,10 @@ export class With_Appointment_Workflow extends Workflow{
         let wfsWaitRobot:Workflow_Step = new Workflow_Step('WatingForRobotArivalInRoom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
 
         //Stepeigenschaften
-        // console.log(this as With_Appointment_Workflow);
         wfsStart.execute = this.takeStartupActions.bind(this);
-        // steps.push(wfsStart);
+        steps.push(wfsStart);
         wfsWaitRobot.execute = this.watingForRobotArivalInRoom.bind(this);
-        // steps.push(wfsWaitRobot);
+        steps.push(wfsWaitRobot);
 
         //Reihnfolge
         wfsStart.nextStep = wfsWaitRobot;
@@ -59,25 +56,25 @@ export class With_Appointment_Workflow extends Workflow{
 
     private async takeStartupActions(sender:string,message:any):Promise<void>{
         // console.log(this as With_Appointment_Workflow);
-        Workflow_Queue.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment(),this);
+        Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment(),this);
         let Raeume = await GetAllRooms();
         if(Raeume[1].Free == true)
         {
-          Workflow_Queue.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B1'),this);
+          Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B1'),this);
           await SetRoomStatus(Raeume[1].RoomID,false);
         }
         else if(Raeume[2].Free == true)
         {
-          Workflow_Queue.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B2'),this);
+          Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B2'),this);
           await SetRoomStatus(Raeume[2].RoomID,false);
         }
         else if(Raeume[3].Free == true)
         {
-          Workflow_Queue.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B3'),this);
+          Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B3'),this);
           await SetRoomStatus(Raeume[3].RoomID,false);
         }
         else{
-          Workflow_Queue.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('W'),this);
+          Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('W'),this);
           let data = [Raeume[0].RoomID, message.filename];
           let sqlcommand = "INSERT INTO Patients_Rooms (RoomID, PatientID) VALUES (?,?)";
           sql_execute_write(sqlcommand,data);
@@ -89,13 +86,13 @@ export class With_Appointment_Workflow extends Workflow{
         if(message.type == 'DRIVE_TO_ROOM_ANSWER'){
           if(message.Answer == 'TRUE')
           {
-              Workflow_Queue.sendMessage(fixedValues.websocket_smartphoneID,SM_ReachedGoal(true),this);
+              await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_ReachedGoal(true),this);
               ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patient abgeliefert`);
               this.next();
           }
           else if(message.Answer == 'FALSE')
           {
-              Workflow_Queue.sendMessage(fixedValues.websocket_smartphoneID,SM_ReachedGoal(false),this);
+              await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_ReachedGoal(false),this);
               ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patient konnte nicht abgeliefert werden. Roboter scheint Probleme beim Erreichen des Ziels zu haben.`);
               this.next();
           }

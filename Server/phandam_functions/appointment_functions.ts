@@ -18,7 +18,7 @@ export async function getNextAppointment():Promise<Date>{
 
         //TODO: Was ist wenn die Stunde überläuft? wird die automatisch erhöht?
         TimePointer.setMinutes(TimePointer.getMinutes() + fixedValues.TermindauerInMinuten);
-        console.log('Neue Zeit: ' + String(TimePointer));
+        // console.log('Neue Zeit: ' + String(TimePointer));
 
         TimePointer.setMinutes(TimePointer.getMinutes() + fixedValues.TermindauerInMinuten);
         let TimePointerEnd:Date = TimePointer;

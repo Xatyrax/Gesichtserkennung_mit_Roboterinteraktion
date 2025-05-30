@@ -87,8 +87,8 @@ export async function InitActions(message:string){
         return false;
     }
 }
-
-export async function voiceFileUploaded(){
+export async function voiceFileUploaded(){}
+export async function voiceFileUploaded2(){
   sendToClient(fixedValues.websocket_spracherkennungID,'Sprachdatei hochgeladen. Erwarte Nachricht...');
 
   while (true){
