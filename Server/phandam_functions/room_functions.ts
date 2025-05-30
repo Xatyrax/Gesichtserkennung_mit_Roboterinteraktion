@@ -33,7 +33,7 @@ export async function SetRoomStatus(roomID:number,Free:Boolean){
         let PatientenID:any = await sql_execute(`SELECT PatientID FROM Patients_Rooms as PR Join Rooms as R WHERE R.RoomKey = 'W';`);
         if(PatientenID.length > 0)
         {
-            Workflow_Starter.tryStartPickFromWatingroom();
+            await Workflow_Starter.tryStartPickFromWatingroom();
             return; //Damit der Raum nicht freigegeben wird
         }
         // PatientFromWatingroom();

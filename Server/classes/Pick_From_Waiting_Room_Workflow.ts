@@ -163,13 +163,15 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Behandlungszimmerauswahl gestartet`);
             let sql_Command_GetRoomKey = 'Select RoomKey From Rooms WHERE Free = 1;';
             let roomKey_result:any = await sql_execute(sql_Command_GetRoomKey);
-            if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
-            {console.log('Fehler beim Abrufen des Raumschlüssels. Ungültiger Raumschlüssel von der DB erhalten.')}
+            let roomKey:string='';
+            try{
+                roomKey = roomKey_result[0].RoomKey;
+                if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
+                {console.log('Fehler beim Abrufen des Raumschlüssels. Ungültiger Raumschlüssel von der DB erhalten.')}
+            }catch{roomKey='B1';}
 
             Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Phone_Back(),this);
-            await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
-
-
+            await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey));
 
             ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Roboter ins Behandlungszimmer losgeschickt`);
             this.next();
