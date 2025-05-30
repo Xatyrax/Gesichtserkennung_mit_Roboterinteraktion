@@ -182,6 +182,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout gestartet`);
         while(this._timeout < 13){
             ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout tick: Timeout ${String(this._timeout)}`);
+            this._timeout = this._timeout + 1;
             await sleep();
         }
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
