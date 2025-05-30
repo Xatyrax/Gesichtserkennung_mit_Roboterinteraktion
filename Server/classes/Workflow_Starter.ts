@@ -4,6 +4,7 @@ import {Workflow} from './Workflow';
 import {With_Appointment_Workflow} from './With_Appointment_Workflow';
 import {Without_Appointment_Workflow} from './Without_Appointment_Workflow';
 import {Unknown_Customer_Workflow} from './Unknown_Customer_workflow';
+import {Pick_From_Waiting_Room_Workflow} from './Pick_From_Waiting_Room_Workflow';
 import {Workflow_Queue} from './Workflow_Queue';
 import {Workflow_Communication} from './Workflow_Communication';
 import {faceExists,HasAppointment} from '../api/websocket_client_actions';
@@ -12,6 +13,17 @@ import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_Know
 export class Workflow_Starter{
 
     // public static queue:Workflow[] = [];
+
+    public static async tryStartPickFromWatingroom():Promise<boolean>{
+        return new Promise(async (resolve, reject) => {
+            try{
+                    let wf = new Pick_From_Waiting_Room_Workflow(0,'','');
+                    Workflow_Queue.queue.push(wf);
+                }catch(error){reject(error);return;}
+
+            resolve(true);return;
+        });
+    }
 
     public static async tryStart():Promise<boolean>{
         return new Promise(async (resolve, reject) => {
@@ -35,7 +47,7 @@ export class Workflow_Starter{
             try{
                     let wf = new Unknown_Customer_Workflow(0,fixedValues.websocket_gesichtserkennungID,Face_Exists_Response);
                     Workflow_Queue.queue.push(wf);
-                }catch(error){reject(error);}
+                }catch(error){reject(error);return;}
 
             resolve(true);return;
             //TODO:start Unknown Workflow

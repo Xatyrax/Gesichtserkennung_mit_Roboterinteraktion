@@ -1,5 +1,6 @@
 import { sql_execute, sql_execute_write } from '../phandam_modules/db_utils';
 import {TakePatientFromWatingRoom} from '../api/websocket_client_actions';
+import {Workflow_Starter} from '../classes/Workflow_Starter';
 
 export async function GetAllRooms():Promise<any>{
     return new Promise(async (resolve, reject) => {
@@ -28,7 +29,9 @@ export async function SetRoomStatus(roomID:number,Free:Boolean){
     if(Free == true)
     {
         sqlcommand = "Update Rooms set Free = 1 WHERE RoomID = ?";
-        PatientFromWatingroom();
+
+        Workflow_Starter.tryStartPickFromWatingroom();
+        // PatientFromWatingroom();
     }
     else
     {sqlcommand = "Update Rooms set Free = 0 WHERE RoomID = ?";}
