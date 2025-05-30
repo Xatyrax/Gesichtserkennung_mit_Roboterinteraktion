@@ -43,7 +43,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         let steps:Workflow_Step[] = [new Workflow_Step()];
 
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsPickPatient',null,null);
-        let wfsWaitUntilWaitingroom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInWatingroom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
+        let wfsWaitUntilWaitingroom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInWatingroom',fixedValues.websocket_RoboterID,'PICK_PATIENT_ANSWER');
         let wfsWaitForSpeech:Workflow_Step = new Workflow_Step('WatingForSpeechResponse','','');
         let wfsWaitForSmart:Workflow_Step = new Workflow_Step('WatingForSmartphoneResponse',fixedValues.websocket_smartphoneID,'AUDIO_GENERATION_REQUEST_SUCCESS_ANSWER');
         let wfsWaitUntilTreRoom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInRoom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
@@ -81,13 +81,13 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             let patientenIdResult:any = await sql_execute(`SELECT PatientID FROM Patients_Rooms as PR Join Rooms as R WHERE R.RoomKey = 'W';`);
             console.log(patientenIdResult);
             this._patientenID = patientenIdResult[0].PatientID;
-            await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('W'));
+            await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToPickUpPatient());
         });
     }
 
     private async watingForRobotArivalInWatingroom(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
-            if(message.type == 'DRIVE_TO_ROOM_ANSWER'){
+            if(message.type == 'PICK_PATIENT_ANSWER'){
                 if(message.Answer == 'TRUE')
                 {
                     console.log(`Patientendaten für PatientenID ${this._patientenID} abfragen starten`);
