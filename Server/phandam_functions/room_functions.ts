@@ -30,7 +30,11 @@ export async function SetRoomStatus(roomID:number,Free:Boolean){
     {
         sqlcommand = "Update Rooms set Free = 1 WHERE RoomID = ?";
 
-        Workflow_Starter.tryStartPickFromWatingroom();
+        let PatientenID:any = await sql_execute(`SELECT PatientID FROM Patients_Rooms as PR Join Rooms as R WHERE R.RoomKey = 'W';`);
+        if(PatientenID.length > 0)
+        {
+            Workflow_Starter.tryStartPickFromWatingroom();
+        }
         // PatientFromWatingroom();
     }
     else
