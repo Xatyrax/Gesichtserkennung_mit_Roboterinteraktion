@@ -150,7 +150,8 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             if(message.type == 'ERROR_PHONE_NOT_REMOVED'){
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Reset Timeout`);
                     this._timeout = 0;
-                    this._currentStep = (this._WorkflowSteps as Workflow_Step[])[3];
+                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Reset Step: ${(this._WorkflowSteps as Workflow_Step[])[4].getName()}`);
+                    this._currentStep = (this._WorkflowSteps as Workflow_Step[])[4];
                     this.next();
             }
         });
@@ -191,8 +192,8 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             await sleep();
         }
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
-        ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Next Step: ${(this._WorkflowSteps as Workflow_Step[])[4]}`);
-        this._currentStep = (this._WorkflowSteps as Workflow_Step[])[4];
+        ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Next Step: ${(this._WorkflowSteps as Workflow_Step[])[5].getName()}`);
+        this._currentStep = (this._WorkflowSteps as Workflow_Step[])[5];
         this._currentStep.execute('','');
         // this.next();
     }
