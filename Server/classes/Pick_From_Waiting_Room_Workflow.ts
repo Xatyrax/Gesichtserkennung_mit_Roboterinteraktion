@@ -63,10 +63,9 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         //Reihnfolge
         wfsStart.nextStep = wfsWaitUntilWaitingroom;
         wfsWaitUntilWaitingroom.nextStep = wfsWaitForSpeech;
-        wfsWaitForSpeech.nextStep = wfsWaitForSmart;
-        wfsWaitForSmart.nextStep = wfsWaitUntilTreRoom;
-        wfsWaitUntilWaitingroom.nextStep = wfsWaitForSpeech;
-        wfsWaitUntilWaitingroom.nextStep = wfsWaitForSpeech;
+        wfsWaitForSpeech.nextStep = wfsWaitUntilTreRoom;
+        // wfsWaitForSpeech.nextStep = wfsWaitForSmart;
+        // wfsWaitForSmart.nextStep = wfsWaitUntilTreRoom;
 
         //Startpunkt
         this._currentStep = wfsStart;
@@ -101,7 +100,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                     }
 
                     Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_ReachedGoal(true),this);
-                    await Workflow_Communication.sendMessage(fixedValues.websocket_spracherkennungID,SP_Audio_Genaration_Request(`${Patienname[0].Firstname} ${Patienname[0].Lastname} folgen Sie mir bitte ins Behandlungszimmer`),this);
+                    await Workflow_Communication.sendMessage(fixedValues.websocket_spracherkennungID,SP_Audio_Genaration_Request(`${Patienname[0].Firstname} ${Patienname[0].Lastname} bitte heben sie das Handy hoch und folgen Sie mir bitte ins Behandlungszimmer`),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: In Wartezimmer angekommen`);
                     this.next();
                     this._currentStep.execute('','');
@@ -129,6 +128,15 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                 ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Audiodatei wurde generiert`);
                 await sleep(10);
                 await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Audio_GenerationSuccess(),this);
+
+                let sql_Command_GetRoomKey = 'Select RoomKey From Rooms WHERE Free = 1;';
+                let roomKey_result:any = await sql_execute(sql_Command_GetRoomKey);
+                if(roomKey_result[0].RoomKey != 'W' && roomKey_result[0].RoomKey != 'B1' && roomKey_result[0].RoomKey != 'B2' && roomKey_result[0].RoomKey != 'B3')
+                {console.log('Fehler beim Abrufen des Raumschlüssels. Ungültiger Raumschlüssel von der DB erhalten.')}
+
+                await Workflow_Communication.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget(roomKey_result[0].RoomKey));
+                ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Roboter ins Behandlungszimmer losgeschickt`);
+
                 this.next();
         });
     }
