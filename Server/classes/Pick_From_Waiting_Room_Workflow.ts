@@ -133,7 +133,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                     await sleep();
                 }
                 ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Audiodatei wurde generiert`);
-                // await sleep(10);
+                await sleep(10);
                 await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Audio_GenerationSuccess(),this);
                 ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout starten`);
                 this.waitForTimeout();
@@ -179,7 +179,9 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
     }
 
     private async waitForTimeout():Promise<void>{
+        ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout gestartet`);
         while(this._timeout < 13){
+            ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout tick: Timeout ${String(this._timeout)}`);
             await sleep();
         }
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
