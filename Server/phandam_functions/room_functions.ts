@@ -34,6 +34,7 @@ export async function SetRoomStatus(roomID:number,Free:Boolean){
         if(PatientenID.length > 0)
         {
             Workflow_Starter.tryStartPickFromWatingroom();
+            return; //Damit der Raum nicht freigegeben wird
         }
         // PatientFromWatingroom();
     }
