@@ -246,7 +246,9 @@ app.post("/api/event", async (req: Request, res: Response) => {
 
   if(InputErrorMessage != null)
   {
-    req.session.userInputError = JSON.parse(`{"message":"${InputErrorMessage}","InputedData":{"eventid":"${eventid?eventid:''}","date":"${req.session.date}",  "starttime":"${starttime}", "endtime":"${endtime}", "sex":"${sex?sex:''}","firstname":"${firstname}","lastname":"${lastname}","birthday":"${birthdayString}","phone":"${phone?phone:''}","mail":"${mail?mail:''}"}}`);
+    // console.log(date);
+    // console.log(req.session.date);
+    req.session.userInputError = JSON.parse(`{"message":"${InputErrorMessage}","InputedData":{"eventid":"${eventid?eventid:''}","date":"${date}",  "starttime":"${starttime}", "endtime":"${endtime}", "sex":"${sex?sex:''}","firstname":"${firstname}","lastname":"${lastname}","birthday":"${birthdayString}","phone":"${phone?phone:''}","mail":"${mail?mail:''}"}}`);
     res.redirect("/termin");
     return;
   }
