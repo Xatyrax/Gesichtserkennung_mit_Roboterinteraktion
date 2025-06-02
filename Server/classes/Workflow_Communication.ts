@@ -78,4 +78,22 @@ export class Workflow_Communication{
                 }
         }
     }
+
+    public static ShutdownWorkflow(id:string):void
+    {
+        ConsoleLogger.logDebug(`versuche Workflow ${id} zu beenden`);
+
+        let lengthBefore = Workflow_Queue.queue.length;
+        let newQueue = Workflow_Queue.queue.filter(w => w.getid() !== id);
+        let lengthAfter = newQueue.length;
+
+        if(lengthBefore == lengthAfter)
+        {ConsoleLogger.logDebug(`Ein Workflow mit id ${id} existiert nicht`);return;}
+
+        if(Type_Validations.isUndefined(newQueue) == false)
+        {
+            Workflow_Queue.queue = newQueue as Workflow[];
+            ConsoleLogger.logDebug(`Workflow ${id} ist beendet`);
+        }
+    }
 }
