@@ -9,7 +9,8 @@ import {clients,clients_lastmessage,sendToClient, getLastMessage } from './webso
 import {With_Appointment_Workflow} from '../classes/With_Appointment_Workflow';
 import {Without_Appointment_Workflow} from '../classes/Without_Appointment_Workflow';
 import {Workflow_Queue} from '../classes/Workflow_Queue';
-import {Workflow_Communication} from '../classes/Workflow_Communication';
+// import {Workflow_Communication} from '../classes/Workflow_Communication';
+import {Workflow_Actions} from '../classes/Workflow_Actions';
 // import {DriveToPickUpPatient} from '../api/websocket_messages';
 // import {sendToClient} from './websocket_modules';
 
@@ -159,7 +160,7 @@ function recivedFormAuthenticatedClient(id:string,message:string){
     {
         try{JSON.parse(message)}
         catch{ConsoleLogger.logWarning(`Die Nachricht ${message} ist kein gültiges JSON Format. Nachricht wird ignoriert.`); return;}
-        Workflow_Communication.reciveMessage(id,JSON.parse(message));
+        Workflow_Actions.reciveMessage(id,JSON.parse(message));
     }
 }
 

@@ -7,7 +7,7 @@ import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphon
 // import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room_functions';
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
-import {Workflow_Communication} from './Workflow_Communication';
+import {Workflow_Actions} from './Workflow_Actions';
 import {SM_Face_KnownPatient_WithoutAppointment,SM_Extract_From_Audio_Yes,SM_Extract_From_Audio_No,SM_NextAppointment_Response,SM_Failure} from '../api/websocket_messages';
 
 
@@ -60,7 +60,7 @@ export class Without_Appointment_Workflow extends Workflow{
     private async takeStartupActions(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
 
-            await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
+            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
             await sleep(3);
 
             let nextAppointment:Date = await getNextAppointment();
@@ -68,7 +68,7 @@ export class Without_Appointment_Workflow extends Workflow{
             let time:string = convertDateToSmartphoneTime(nextAppointment);
             let weekday:string = convertDateToWeekdayShortform(nextAppointment);
 
-            await Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
+            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
         });
     }
 
@@ -77,19 +77,19 @@ export class Without_Appointment_Workflow extends Workflow{
             if(message.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS'){
                 if(message.message.text.result == 'YES')
                 {
-                    Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes());
+                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes());
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin angenommen`);
                     this.next();
                 }
                 else if(message.message.text.result == 'NO')
                 {
-                    Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_No());
+                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_No());
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin abgelehnt`);
                     this.next();
                 }
                 else
                 {
-                    Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Failure(`Von ${sender} wurde eine Nachricht gesendet die den richtigen type hat, aber die der Workflow an dieser Stelle nicht benötigt.`));
+                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Failure(`Von ${sender} wurde eine Nachricht gesendet die den richtigen type hat, aber die der Workflow an dieser Stelle nicht benötigt.`));
                     ConsoleLogger.logError(`${this.constructor.name} ${this._id} ist verwirrt! Von ${sender} wurde eine Nachricht gesendet die den richtigen type hat, aber die der Workflow an dieser Stelle nicht benötigt.`);
                     this.next();
                 }

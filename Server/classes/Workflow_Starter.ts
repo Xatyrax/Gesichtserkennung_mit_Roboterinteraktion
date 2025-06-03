@@ -6,13 +6,11 @@ import {Without_Appointment_Workflow} from './Without_Appointment_Workflow';
 import {Unknown_Customer_Workflow} from './Unknown_Customer_workflow';
 import {Pick_From_Waiting_Room_Workflow} from './Pick_From_Waiting_Room_Workflow';
 import {Workflow_Queue} from './Workflow_Queue';
-import {Workflow_Communication} from './Workflow_Communication';
+import {Workflow_Actions} from './Workflow_Actions';
 import {faceExists,HasAppointment} from '../api/websocket_client_actions';
 import {SM_Face_UnknownPatient,SM_Face_KnownPatient_WithAppointment,SM_Face_KnownPatient_WithoutAppointment,SM_Face_Timeout,DriveToTarget,DriveToBase,DriveToPickUpPatient,SP_Audio_Genaration_Request,SM_Audio_GenerationSuccess,SM_Audio_GenerationFailure,GE_Does_Face_Exist,SM_Failure,SP_Failure,SM_Extract_From_Audio_Success,GE_New_Patient,SM_NextAppointment_Response,Ro_Failure,GE_Failure,SM_Persondata} from '../api/websocket_messages';
 
 export class Workflow_Starter{
-
-    // public static queue:Workflow[] = [];
 
     public static async tryStartPickFromWatingroom():Promise<boolean>{
         return new Promise(async (resolve, reject) => {
@@ -63,7 +61,7 @@ export class Workflow_Starter{
             if(Face_Exists_Response.filename === undefined)
             {
             ConsoleLogger.logDebug(`Gesichtserkennung hat keine Eigenschaft filename in der JSON Nachricht. Beende Workflow`);
-            Workflow_Communication.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_Failure('Keine filename Eigenschaft in der Nachricht vorhanden'));
+            Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_Failure('Keine filename Eigenschaft in der Nachricht vorhanden'));
             resolve(false);return;
             }
             if(Face_Exists_Response.filename.endsWith('.jpeg') || Face_Exists_Response.filename.endsWith('.png'))
@@ -75,7 +73,7 @@ export class Workflow_Starter{
             if(isNaN(Number(Face_Exists_Response.filename)))
             {
             ConsoleLogger.logDebug(`Gesichtserkennung hat keine gültige ID zurückgegeben Beende Workflow`);
-            Workflow_Communication.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_Failure('Ungültige filename Eigenschaft in der Nachricht. Der Filename konnte nicht in einen numerischen Wert umgewandelt werden'));
+            Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_Failure('Ungültige filename Eigenschaft in der Nachricht. Der Filename konnte nicht in einen numerischen Wert umgewandelt werden'));
             resolve(false);return;
             }
 
