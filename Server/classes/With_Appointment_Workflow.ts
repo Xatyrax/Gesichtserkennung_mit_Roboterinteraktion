@@ -13,7 +13,7 @@ export class With_Appointment_Workflow extends Workflow{
 
     constructor(timeoutTimer:number,sender:string,message:any)
     {
-        super(timeoutTimer);
+        super();
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu With_Appointment_Workflow`);
         try{
         this._WorkflowSteps = this.createWorkflowsteps();

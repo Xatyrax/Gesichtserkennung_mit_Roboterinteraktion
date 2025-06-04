@@ -20,10 +20,10 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
 
     constructor(timeoutTimer:number,sender:string,message:any)
     {
-        super(timeoutTimer);
+        super();
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu Pick_From_Waiting_Room_Workflow`);
         this._patientenID = 0;
-        this._timeout = 0;
+        this._timeout = 10;
         try{
 
         this._WorkflowSteps = this.createWorkflowsteps();
@@ -88,7 +88,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             console.log(patientenIdResult);
             //TODO: Überprüfen ob es diese PatientenID in der Datenbank gibt
             this._patientenID = patientenIdResult[0].PatientID;
-            await Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToPickUpPatient());
+            await Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToPickUpPatient(),this);
         });
     }
 

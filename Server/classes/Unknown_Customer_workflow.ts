@@ -19,7 +19,7 @@ export class Unknown_Customer_Workflow extends Workflow{
 
     constructor(timeoutTimer:number,sender:string,message:any)
     {
-        super(timeoutTimer);
+        super();
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu Unknown_Customer_Workflow`);
         try{
         this._WorkflowSteps = this.createWorkflowsteps();
@@ -92,7 +92,7 @@ export class Unknown_Customer_Workflow extends Workflow{
             let email:string|null = message.message.text.email_address;
 
             let ResponseForSmartphone = SM_Persondata(vorname,nachname,geschlecht??'-',convertDateToSmartphoneDate(gebrutsdatum),tel??'-',email??'-');
-            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,ResponseForSmartphone);
+            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,ResponseForSmartphone,this);
 
             this.next();
         });
@@ -104,7 +104,7 @@ export class Unknown_Customer_Workflow extends Workflow{
                 if(message.Answer == 'TRUE')
                 {
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patientendaten angenommen. Patient wird gespeichert.`);
-                    await Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient());
+                    await Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(),this);
 
                     // let nextAppointment:Date = await getNextAppointment();
                     // let date:string = convertDateToSmartphoneDate(nextAppointment);
@@ -136,7 +136,7 @@ export class Unknown_Customer_Workflow extends Workflow{
                 }
                 else
                 {
-                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Failure(`Von ${sender} wurde eine Nachricht gesendet die den richtigen type hat, aber die der Workflow an dieser Stelle nicht benötigt. Beende Workflow`));
+                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Failure(`Von ${sender} wurde eine Nachricht gesendet die den richtigen type hat, aber die der Workflow an dieser Stelle nicht benötigt. Beende Workflow`),this);
                     ConsoleLogger.logError(`${this.constructor.name} ${this._id} ist verwirrt! Von ${sender} wurde eine Nachricht gesendet die den richtigen type hat, aber die der Workflow an dieser Stelle nicht benötigt. Beende Workflow`);
                     Workflow_Actions.ShutdownWorkflow(this._id);
 
@@ -151,7 +151,7 @@ export class Unknown_Customer_Workflow extends Workflow{
             if(message.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS'){
                 if(message.message.text.result == 'YES')
                 {
-                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes());
+                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes(),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin angenommen`);
                     this.next();
                 }
@@ -174,6 +174,6 @@ export class Unknown_Customer_Workflow extends Workflow{
          let time:string = convertDateToSmartphoneTime(nextAppointment);
          let weekday:string = convertDateToWeekdayShortform(nextAppointment);
 
-         await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
+         await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday),this);
      }
 }

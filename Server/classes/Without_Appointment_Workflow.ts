@@ -16,7 +16,7 @@ export class Without_Appointment_Workflow extends Workflow{
 
     constructor(timeoutTimer:number,sender:string,message:any)
     {
-        super(timeoutTimer);
+        super();
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu Without_Appointment_Workflow`);
         try{
         this._WorkflowSteps = this.createWorkflowsteps();
@@ -60,7 +60,7 @@ export class Without_Appointment_Workflow extends Workflow{
     private async takeStartupActions(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
 
-            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
+            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment(),this);
             await sleep(3);
 
             let nextAppointment:Date = await getNextAppointment();
@@ -68,7 +68,7 @@ export class Without_Appointment_Workflow extends Workflow{
             let time:string = convertDateToSmartphoneTime(nextAppointment);
             let weekday:string = convertDateToWeekdayShortform(nextAppointment);
 
-            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
+            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday),this);
         });
     }
 
@@ -77,13 +77,13 @@ export class Without_Appointment_Workflow extends Workflow{
             if(message.type == 'EXTRACT_DATA_FROM_AUDIO_SUCCESS'){
                 if(message.message.text.result == 'YES')
                 {
-                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes());
+                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes(),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin angenommen`);
                     this.next();
                 }
                 else if(message.message.text.result == 'NO')
                 {
-                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_No());
+                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_No(),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin abgelehnt`);
                     this.next();
                 }
