@@ -17,6 +17,7 @@ export class Workflow_Actions{
         if(!Type_Validations.isUndefined(sender))
         {
             sender = sender as Workflow;
+
             let WfsMitID = Workflow_Queue.queue.filter(w => w.getid() === (sender as Workflow).getid());
             if(WfsMitID.length < 1)
             {
@@ -92,6 +93,16 @@ export class Workflow_Actions{
     public static ShutdownWorkflow(id:string):void
     {
         ConsoleLogger.logDebug(`versuche Workflow ${id} zu beenden`);
+
+        let WorkflowsToShutdown = Workflow_Queue.queue.filter(w => w.getid() === id);
+        if(WorkflowsToShutdown.length < 1)
+        {
+            ConsoleLogger.logDebug(`Workflow ${id} Timeout deaktivieren nicht möglich, da kein Workflow mit dieser ID gefunden wurde.`);
+        }
+        else
+        {
+            WorkflowsToShutdown[0].deactivateTimeout();
+        }
 
         let lengthBefore = Workflow_Queue.queue.length;
         let newQueue = Workflow_Queue.queue.filter(w => w.getid() !== id);

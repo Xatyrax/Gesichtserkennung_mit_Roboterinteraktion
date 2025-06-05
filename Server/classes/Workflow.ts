@@ -47,6 +47,10 @@ export abstract class Workflow{
 
     public getcurrentStep():Workflow_Step{return this._currentStep;}
 
+    public deactivateTimeout(){
+        this._timeoutTimer = -1;
+    }
+
     private generateid():string{
         let da = new Date();
         let id = String(da.getHours()) +  String(da.getMinutes()) + String(da.getSeconds());
@@ -59,6 +63,7 @@ export abstract class Workflow{
             this._timeoutTimer = this._timeoutTimer - 1;
             await sleep();
         }
+        if(this._timeoutTimer == -1){return;}
         ConsoleLogger.logDebug(`Workflow ${this._id} Timeout abgelaufen. Beende Workflow`);
         Workflow_Actions.ShutdownWorkflow(this._id);
     }

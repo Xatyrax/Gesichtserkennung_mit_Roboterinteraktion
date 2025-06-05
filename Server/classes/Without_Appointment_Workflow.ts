@@ -14,12 +14,15 @@ import {SM_Face_KnownPatient_WithoutAppointment,SM_Extract_From_Audio_Yes,SM_Ext
 
 export class Without_Appointment_Workflow extends Workflow{
 
-
+    private _patientenID:number;
+    private _nextAppointment:Date;
 
     constructor(timeoutTimer:number,sender:string,message:any)
     {
         super();
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu Without_Appointment_Workflow`);
+        this._patientenID = 0;
+        this._nextAppointment = new Date();
         try{
         this._WorkflowSteps = this.createWorkflowsteps();
         if (sender!='')
@@ -62,6 +65,9 @@ export class Without_Appointment_Workflow extends Workflow{
     private async takeStartupActions(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
 
+            //Vorherige Überprüfung (ist Zahl, ist in DB) findet schon bei der Workflowauswahl statt
+            this._patientenID = Number(message.filename);
+
             await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment(),this);
             await sleep(3);
 
@@ -69,6 +75,7 @@ export class Without_Appointment_Workflow extends Workflow{
             let date:string = convertDateToSmartphoneDate(nextAppointment);
             let time:string = convertDateToSmartphoneTime(nextAppointment);
             let weekday:string = convertDateToWeekdayShortform(nextAppointment);
+            this._nextAppointment = nextAppointment;
 
             await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday),this);
         });
@@ -81,9 +88,12 @@ export class Without_Appointment_Workflow extends Workflow{
                 {
                     Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes(),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin angenommen`);
-                    // let sqlcommand:string = "Insert Into Appointments (Start, End, PatientID) Values (?);";
-                    // let data = [this._patientenID];
-                    // await sql_execute_write(sqlcommand,data);
+
+                    let TerminStart:string = convertDateToUString(new Date(this._nextAppointment.getTime()),true);
+                    let TerminEnde:string = convertDateToUString(new Date(this._nextAppointment.getTime() + fixedValues.TermindauerInMinuten * 60000),true);
+                    let sqlcommand:string = "Insert Into Appointments (Start, End, PatientID) Values (?,?,?);";
+                    let data = [TerminStart,TerminEnde,this._patientenID];
+                    await sql_execute_write(sqlcommand,data);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin gespeichert`);
                     this.next();
                 }
