@@ -14,6 +14,8 @@ import {SM_Face_KnownPatient_WithoutAppointment,SM_Extract_From_Audio_Yes,SM_Ext
 
 export class Without_Appointment_Workflow extends Workflow{
 
+
+
     constructor(timeoutTimer:number,sender:string,message:any)
     {
         super();
@@ -79,6 +81,10 @@ export class Without_Appointment_Workflow extends Workflow{
                 {
                     Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes(),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin angenommen`);
+                    // let sqlcommand:string = "Insert Into Appointments (Start, End, PatientID) Values (?);";
+                    // let data = [this._patientenID];
+                    // await sql_execute_write(sqlcommand,data);
+                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin gespeichert`);
                     this.next();
                 }
                 else if(message.message.text.result == 'NO')
