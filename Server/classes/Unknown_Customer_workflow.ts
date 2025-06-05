@@ -123,6 +123,7 @@ export class Unknown_Customer_Workflow extends Workflow{
                 {
                     if(this._personDataError != "")
                     {
+                        await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Failure(this._personDataError),this);
                         ConsoleLogger.logWarning(`${this.constructor.name} ${this._id}: Patientendaten Fehlerhaft: ${this._personDataError}. Warte auf neue Patientendaten`);
                         this._currentStep = (this._WorkflowSteps as Workflow_Step[])[2];
                         // console.log(this._currentStep);
