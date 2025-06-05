@@ -68,7 +68,7 @@ export class Without_Appointment_Workflow extends Workflow{
             //Vorherige Überprüfung (ist Zahl, ist in DB) findet schon bei der Workflowauswahl statt
             this._patientenID = Number(message.filename);
 
-            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment(),this);
+            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithoutAppointment());
             await sleep(3);
 
             let nextAppointment:Date = await getNextAppointment();
@@ -77,7 +77,7 @@ export class Without_Appointment_Workflow extends Workflow{
             let weekday:string = convertDateToWeekdayShortform(nextAppointment);
             this._nextAppointment = nextAppointment;
 
-            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday),this);
+            await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
         });
     }
 

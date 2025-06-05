@@ -56,26 +56,26 @@ export class With_Appointment_Workflow extends Workflow{
 
     private async takeStartupActions(sender:string,message:any):Promise<void>{
         // console.log(this as With_Appointment_Workflow);
-        Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment(),this);
+        Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
         let Raeume = await GetAllRooms();
         if(Raeume[1].Free == true)
         {
-          Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B1'),this);
+          Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
           await SetRoomStatus(Raeume[1].RoomID,false);
         }
         else if(Raeume[2].Free == true)
         {
-          Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B2'),this);
+          Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B2'));
           await SetRoomStatus(Raeume[2].RoomID,false);
         }
         else if(Raeume[3].Free == true)
         {
-          Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B3'),this);
+          Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B3'));
           await SetRoomStatus(Raeume[3].RoomID,false);
         }
         else{
           //TODO: Filename nicht vorhanden
-          Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('W'),this);
+          Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('W'));
           let data = [Raeume[0].RoomID, message.filename];
           let sqlcommand = "INSERT INTO Patients_Rooms (RoomID, PatientID) VALUES (?,?)";
           sql_execute_write(sqlcommand,data);

@@ -88,7 +88,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
             console.log(patientenIdResult);
             //TODO: Überprüfen ob es diese PatientenID in der Datenbank gibt
             this._patientenID = patientenIdResult[0].PatientID;
-            await Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToPickUpPatient(),this);
+            await Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToPickUpPatient());
         });
     }
 

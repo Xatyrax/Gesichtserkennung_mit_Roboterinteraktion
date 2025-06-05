@@ -2,8 +2,8 @@ let fixedValues = {
     NotUsedVariableString: '',
     NotUsedVariableDate: new Date(1900,0,0,0,0,0),
     TermindauerInMinuten: 30,
-    OeffnungszeitVon: 8,
-    OeffnungszeitBis: 17,
+    OeffnungszeitVon: 8, //Nur volle Stunden
+    OeffnungszeitBis: 17, //Nur volle Stunden
     MaximaleVerfruehungsDauerInMinuten:15,
     MaximaleVerspaetungsDauerInMinuten:15,
     TimeoutSpracheInSekunden: 500,
