@@ -4,7 +4,8 @@ import fixedValues from '../phandam_modules/config';
 import { sql_execute, sql_execute_write } from '../phandam_modules/db_utils';
 // import {sleep} from '../phandam_modules/timing_utils';
 // import { getNextAppointment } from '../phandam_functions/appointment_functions';
-import {convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform} from '../phandam_modules/date_time_utils';
+import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform} from '../phandam_modules/date_time_utils';
+// import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform } from '../phandam_modules/date_time_utils';
 // import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform } from '../phandam_modules/date_time_utils';
 import { getNextAppointment } from '../phandam_functions/appointment_functions';
 // import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room_functions';
@@ -17,10 +18,15 @@ import {SM_Face_UnknownPatient,SM_Persondata,GE_New_Patient,SM_Failure,SM_Extrac
 
 export class Unknown_Customer_Workflow extends Workflow{
 
+    private _patientenID:number;
+    private _nextAppointment:Date;
+
     constructor(timeoutTimer:number,sender:string,message:any)
     {
         super();
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu Unknown_Customer_Workflow`);
+        this._patientenID = 0;
+        this._nextAppointment = new Date();
         try{
         this._WorkflowSteps = this.createWorkflowsteps();
         if (sender!='')
@@ -43,7 +49,7 @@ export class Unknown_Customer_Workflow extends Workflow{
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsUnknown',null,null);
         let wfsWaitPerData:Workflow_Step = new Workflow_Step('WatingForPersonData',fixedValues.websocket_spracherkennungID,'EXTRACT_DATA_FROM_AUDIO_SUCCESS');
         let wfsWaitPerDataConfirm:Workflow_Step = new Workflow_Step('WatingForPersonDataConfirmation',fixedValues.websocket_smartphoneID,'DATA_CONFIRMATION');
-        let wfsWaitForNextApoConfirmation:Workflow_Step = new Workflow_Step('WatingForNextAppointmentConfirmation',fixedValues.websocket_smartphoneID,'DATA_CONFIRMATION');
+        let wfsWaitForNextApoConfirmation:Workflow_Step = new Workflow_Step('WatingForNextAppointmentConfirmation',fixedValues.websocket_spracherkennungID,'EXTRACT_DATA_FROM_AUDIO_SUCCESS');
 
         //Stepeigenschaften
         wfsStart.execute = this.takeStartupActions.bind(this);
@@ -71,6 +77,7 @@ export class Unknown_Customer_Workflow extends Workflow{
     private async takeStartupActions(sender:string,message:any):Promise<void>{
         return new Promise(async (resolve, reject) => {
 
+            this._patientenID = Number(message.filename);
             await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
 
         });
@@ -106,14 +113,17 @@ export class Unknown_Customer_Workflow extends Workflow{
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patientendaten angenommen. Patient wird gespeichert.`);
                     await Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(),this);
 
+                    // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Senden an Smartphone.`);
+                    await this.sendNextAppointment();
+
                     // let nextAppointment:Date = await getNextAppointment();
+                    // // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: ${nextAppointment}`);
                     // let date:string = convertDateToSmartphoneDate(nextAppointment);
                     // let time:string = convertDateToSmartphoneTime(nextAppointment);
                     // let weekday:string = convertDateToWeekdayShortform(nextAppointment);
-                    //
-                    // await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
 
-                    await this.sendNextAppointment();
+                    // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: ${nextAppointment}`);
+                    // await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday),this);
 
                     this.next();
                 }
@@ -153,6 +163,14 @@ export class Unknown_Customer_Workflow extends Workflow{
                 {
                     Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_Yes(),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin angenommen`);
+
+                    let TerminStart:string = convertDateToUString(new Date(this._nextAppointment.getTime()),true);
+                    let TerminEnde:string = convertDateToUString(new Date(this._nextAppointment.getTime() + fixedValues.TermindauerInMinuten * 60000),true);
+                    let sqlcommand:string = "Insert Into Appointments (Start, End, PatientID) Values (?,?,?);";
+                    let data = [TerminStart,TerminEnde,this._patientenID];
+                    await sql_execute_write(sqlcommand,data);
+                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin gespeichert`);
+
                     this.next();
                 }
                 else if (message.message.text.result == 'NO')
@@ -169,11 +187,16 @@ export class Unknown_Customer_Workflow extends Workflow{
     }
 
      private async sendNextAppointment():Promise<void> {
+         // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Next Appointment.`);
          let nextAppointment:Date = await getNextAppointment();
+         // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: ${nextAppointment}`);
          let date:string = convertDateToSmartphoneDate(nextAppointment);
          let time:string = convertDateToSmartphoneTime(nextAppointment);
          let weekday:string = convertDateToWeekdayShortform(nextAppointment);
 
+         this._nextAppointment = nextAppointment;
+
+         // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: ${nextAppointment}`);
          await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday),this);
      }
 }

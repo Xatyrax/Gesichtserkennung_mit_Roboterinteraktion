@@ -28,7 +28,9 @@ export async function getNextAppointment():Promise<Date>{
                 if(CurrentTimeAppointments.length < 3)
                 {
                     ConsoleLogger.logDebug(`Termin ausgewählt: ${currentPointer}`);
+                    resolve(currentPointer);
                     return currentPointer;
+                    ConsoleLogger.logDebug(`returned?`);
                 }
                 else
                 {
