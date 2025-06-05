@@ -101,7 +101,18 @@ export class Without_Appointment_Workflow extends Workflow{
                 {
                     Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_No(),this);
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Nächster Termin abgelehnt`);
-                    this.next();
+
+                    let nextAppointment:Date = await getNextAppointment(); //TODO: nächster Termin + 1
+                    let date:string = convertDateToSmartphoneDate(nextAppointment);
+                    let time:string = convertDateToSmartphoneTime(nextAppointment);
+                    let weekday:string = convertDateToWeekdayShortform(nextAppointment);
+                    this._nextAppointment = nextAppointment;
+
+                    await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
+
+                    this._currentStep = (this._WorkflowSteps as Workflow_Step[])[2];
+
+                    // this.next();
                 }
                 else
                 {
