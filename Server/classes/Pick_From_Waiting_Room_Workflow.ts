@@ -23,7 +23,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         super();
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu Pick_From_Waiting_Room_Workflow`);
         this._patientenID = 0;
-        this._timeout = 10;
+        this._timeout = 0;
         try{
 
         this._WorkflowSteps = this.createWorkflowsteps();

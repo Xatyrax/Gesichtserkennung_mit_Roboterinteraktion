@@ -5,16 +5,20 @@ import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
 import {Workflow_Actions} from './Workflow_Actions';
-import {SM_Face_KnownPatient_WithAppointment,DriveToTarget,SM_ReachedGoal} from '../api/websocket_messages';
+import {SM_Face_KnownPatient_WithAppointment,DriveToTarget,SM_ReachedGoal,SM_Phone_Back} from '../api/websocket_messages';
+import {sleep} from '../phandam_modules/timing_utils';
 
 
 
 export class With_Appointment_Workflow extends Workflow{
 
+    private _timeout:number;
+
     constructor(timeoutTimer:number,sender:string,message:any)
     {
         super();
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu With_Appointment_Workflow`);
+        this._timeout = 0;
         try{
         this._WorkflowSteps = this.createWorkflowsteps();
         if (sender!='')
@@ -36,15 +40,19 @@ export class With_Appointment_Workflow extends Workflow{
 
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsWithAppointment',null,null);
         let wfsWaitRobot:Workflow_Step = new Workflow_Step('WatingForRobotArivalInRoom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
+        let wfsWaitForResTimeout:Workflow_Step = new Workflow_Step('watingForResetTimeout',fixedValues.websocket_RoboterID,'ERROR_PHONE_NOT_REMOVED');
 
         //Stepeigenschaften
         wfsStart.execute = this.takeStartupActions.bind(this);
         steps.push(wfsStart);
         wfsWaitRobot.execute = this.watingForRobotArivalInRoom.bind(this);
         steps.push(wfsWaitRobot);
+        wfsWaitForResTimeout.execute = this.watingForResetTimeout.bind(this);
+        steps.push(wfsWaitForResTimeout);
 
         //Reihnfolge
         wfsStart.nextStep = wfsWaitRobot;
+        wfsWaitRobot.nextStep = wfsWaitForResTimeout;
 
         //Startpunkt
         this._currentStep = wfsStart;
@@ -89,7 +97,11 @@ export class With_Appointment_Workflow extends Workflow{
           {
               await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_ReachedGoal(true),this);
               ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patient abgeliefert`);
+
               this.next();
+
+              ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout starten`);
+              this.waitForTimeout();
           }
           else if(message.Answer == 'FALSE')
           {
@@ -104,6 +116,32 @@ export class With_Appointment_Workflow extends Workflow{
           }
         }
 
+    }
+
+    private async watingForResetTimeout(sender:string,message:any):Promise<void>{
+        return new Promise(async (resolve, reject) => {
+            if(message.type == 'ERROR_PHONE_NOT_REMOVED'){
+                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Reset Timeout`);
+                    this._timeout = 0;
+
+                    // this._currentStep = (this._WorkflowSteps as Workflow_Step[])[4];
+            }
+        });
+    }
+
+    private async waitForTimeout():Promise<void>{
+        ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout gestartet`);
+        while(this._timeout < 13){
+            ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout tick: Timeout ${String(this._timeout)}`);
+            this._timeout = this._timeout + 1;
+            await sleep();
+        }
+        ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
+        await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Phone_Back(),this);
+        // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Next Step: ${(this._WorkflowSteps as Workflow_Step[])[5].getName()}`);
+        // this._currentStep = (this._WorkflowSteps as Workflow_Step[])[5];
+        // this._currentStep.execute('','');
+        this.next();
     }
 
 }
