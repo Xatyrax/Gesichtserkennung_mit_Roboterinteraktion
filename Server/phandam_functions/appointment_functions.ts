@@ -7,7 +7,7 @@ export async function getNextAppointment():Promise<Date>{
     return new Promise(async (resolve, reject) => {
 
         ConsoleLogger.logDebug(`Terminauswahl gestartet`);
-        let now:Date = new Date();
+        // let now:Date = new Date();
         let AppoinmentStartPointer:Date = new Date();
 
         //Tage
