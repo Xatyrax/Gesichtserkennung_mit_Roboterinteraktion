@@ -20,6 +20,7 @@ export class Unknown_Customer_Workflow extends Workflow{
 
     private _patientenID:number;
     private _nextAppointment:Date;
+    private _personDataError:string;
 
     constructor(timeoutTimer:number,sender:string,message:any)
     {
@@ -27,6 +28,7 @@ export class Unknown_Customer_Workflow extends Workflow{
         ConsoleLogger.logDebug(`starte "Downcast": Workflow mit ID ${this._id} zu Unknown_Customer_Workflow`);
         this._patientenID = 0;
         this._nextAppointment = new Date();
+        this._personDataError = ""
         try{
         this._WorkflowSteps = this.createWorkflowsteps();
         if (sender!='')
@@ -98,6 +100,15 @@ export class Unknown_Customer_Workflow extends Workflow{
             let tel:string|null = message.message.text.phone_number;
             let email:string|null = message.message.text.email_address;
 
+            if(message.message.text.firstname == "" || message.message.text.firstname == "-")
+            {this._personDataError = "Fistname Fehler"}
+            else if(message.message.text.lastname == "" || message.message.text.lastname == "-")
+            {this._personDataError = "Lastname Fehler"}
+            else if(message.message.text.date_of_birth == "" || message.message.text.date_of_birth == "-")
+            {this._personDataError = "Geb Fehler"}
+            else
+            {this._personDataError = ""}
+
             let ResponseForSmartphone = SM_Persondata(vorname,nachname,geschlecht??'-',convertDateToSmartphoneDate(gebrutsdatum),tel??'-',email??'-');
             await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,ResponseForSmartphone,this);
 
@@ -110,6 +121,16 @@ export class Unknown_Customer_Workflow extends Workflow{
             if(message.type == 'DATA_CONFIRMATION'){
                 if(message.Answer == 'TRUE')
                 {
+                    if(this._personDataError != "")
+                    {
+                        ConsoleLogger.logWarning(`${this.constructor.name} ${this._id}: Patientendaten Fehlerhaft: ${this._personDataError}. Warte auf neue Patientendaten`);
+                        this._currentStep = (this._WorkflowSteps as Workflow_Step[])[2];
+                        // console.log(this._currentStep);
+                        // ConsoleLogger.logError(`${this.constructor.name} ${this._id}: Patientendaten Fehlerhaft: ${this._personDataError}. Beende Workflow`);
+                        // Workflow_Actions.ShutdownWorkflow(this._id);
+                        return;
+                    }
+
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patientendaten angenommen. Patient wird gespeichert.`);
                     await Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(),this);
 
