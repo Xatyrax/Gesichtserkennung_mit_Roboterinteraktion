@@ -47,8 +47,8 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsPickPatient',null,null);
         let wfsWaitUntilWaitingroom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInWatingroom',fixedValues.websocket_RoboterID,'PICK_PATIENT_ANSWER');
         let wfsWaitForSpeech:Workflow_Step = new Workflow_Step('WatingForSpeechResponse','','');
-        let wfsWaitForResTimeout:Workflow_Step = new Workflow_Step('watingForResetTimeout',fixedValues.websocket_RoboterID,'ERROR_PHONE_NOT_REMOVED');
-        let wfsPhoneRemovedAction:Workflow_Step = new Workflow_Step('PhoneRemovedAction','','');
+        // let wfsWaitForResTimeout:Workflow_Step = new Workflow_Step('watingForResetTimeout',fixedValues.websocket_RoboterID,'ERROR_PHONE_NOT_REMOVED');
+        // let wfsPhoneRemovedAction:Workflow_Step = new Workflow_Step('PhoneRemovedAction','','');
         let wfsWaitUntilTreRoom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInRoom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
 
         //Stepeigenschaften
@@ -58,21 +58,21 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         steps.push(wfsWaitUntilWaitingroom);
         wfsWaitForSpeech.execute = this.watingForSpeechResponse.bind(this);
         steps.push(wfsWaitForSpeech);
-        wfsWaitForResTimeout.execute = this.watingForResetTimeout.bind(this);
-        steps.push(wfsWaitForResTimeout);
-        wfsPhoneRemovedAction.execute = this.PhoneRemoved.bind(this);
-        steps.push(wfsPhoneRemovedAction);
+        // wfsWaitForResTimeout.execute = this.watingForResetTimeout.bind(this);
+        // steps.push(wfsWaitForResTimeout);
+        // wfsPhoneRemovedAction.execute = this.PhoneRemoved.bind(this);
+        // steps.push(wfsPhoneRemovedAction);
         wfsWaitUntilTreRoom.execute = this.watingForRobotArivalInRoom.bind(this);
         steps.push(wfsWaitUntilTreRoom);
 
         //Reihnfolge
         wfsStart.nextStep = wfsWaitUntilWaitingroom;
         wfsWaitUntilWaitingroom.nextStep = wfsWaitForSpeech;
-        wfsWaitForSpeech.nextStep = wfsWaitForResTimeout;
-        wfsWaitForResTimeout.nextStep = wfsPhoneRemovedAction;
-        wfsPhoneRemovedAction.nextStep = wfsWaitUntilTreRoom;
-        // wfsWaitForSpeech.nextStep = wfsWaitForSmart;
-        // wfsWaitForSmart.nextStep = wfsWaitUntilTreRoom;
+        wfsWaitForSpeech.nextStep = wfsWaitUntilTreRoom;
+        // wfsWaitForSpeech.nextStep = wfsWaitForResTimeout;
+        // wfsWaitForResTimeout.nextStep = wfsPhoneRemovedAction;
+        // wfsPhoneRemovedAction.nextStep = wfsWaitUntilTreRoom;
+
 
         //Startpunkt
         this._currentStep = wfsStart;
