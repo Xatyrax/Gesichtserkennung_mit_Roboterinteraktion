@@ -12,7 +12,13 @@ async def handler(websocket):
             print(f"\n📩 Nachricht erhalten:")
             print(message)
 
-            data = json.loads(message)
+            # JSON sicher parsen
+            try:
+                data = json.loads(message)
+            except json.JSONDecodeError:
+                print("⚠️ Ungültiges JSON empfangen – ignoriert:", message)
+                continue
+
             filename = data.get("filename", "unbekannt")
 
             # Interaktive Eingabe
@@ -39,7 +45,7 @@ async def handler(websocket):
 async def main():
     print("🚀 Interaktiver Test-WebSocket-Server auf ws://localhost:3001")
     async with websockets.serve(handler, "localhost", 3001):
-        await asyncio.Future()
+        await asyncio.Future()  # Endlos laufen lassen
 
 if __name__ == "__main__":
     asyncio.run(main())
