@@ -1,12 +1,3 @@
-Server(Neuigkeiten):
-
-01.05.2025: Im Ordner Server existiert jetzt eine Changelog.txt, in der aktuelle Serveränderungen vermerkt werden.
-
-.
-
-.
-
-.
 
 Server(Installation, wenn Node schon vorhanden ist; vorher in Ordner Server navigieren):
 
