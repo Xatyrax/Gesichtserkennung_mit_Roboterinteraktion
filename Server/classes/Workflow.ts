@@ -23,7 +23,6 @@ export abstract class Workflow{
         this._currentStep = new Workflow_Step();
     }
 
-    //TODO:Workflowstep ist überprüfen welcher spezifische Workflow benötigt wird
     public next():void
     {
         if(Type_Validations.isUndefined(this._currentStep.nextStep))

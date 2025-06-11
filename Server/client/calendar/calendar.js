@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             document.getElementById("weekdates").textContent = startOfWeekShort + " - " + endOfWeekShort;
 
             // Headers: Time + 7 Weekdays
-            let headers = ['Time', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            let headers = ['Time', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
             headers.forEach(text => {
                 let div = document.createElement("div");
                 div.classList.add("header");

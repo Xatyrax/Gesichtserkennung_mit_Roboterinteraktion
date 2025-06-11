@@ -6,7 +6,7 @@ const db_connection = require('./dbConnect.js');
     return new Promise(async (resolve, reject) => {
       db_connection.query(command, (err: QueryError | null, result: any) => {
         if (err) {
-          console.log(err); //Debug
+          console.log(err);
           reject(err.message);
       }
       else{
@@ -20,7 +20,7 @@ const db_connection = require('./dbConnect.js');
     return new Promise(async (resolve, reject) => {
         db_connection.query(command, data, (err: QueryError | null, result: any) => {
             if (err) {
-              console.log(err); //Debug
+              console.log(err);
               reject(false);
             }
             resolve(true);

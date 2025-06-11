@@ -63,7 +63,6 @@ export class With_Appointment_Workflow extends Workflow{
     }
 
     private async takeStartupActions(sender:string,message:any):Promise<void>{
-        // console.log(this as With_Appointment_Workflow);
         Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_KnownPatient_WithAppointment());
         let Raeume = await GetAllRooms();
         if(Raeume[1].Free == true)
@@ -111,7 +110,6 @@ export class With_Appointment_Workflow extends Workflow{
           }
           else
           {
-            //TODO: nächsten Nachrichten nicht annehmen um sie anderen nicht wegzunehmen
               ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Unerwartete Nachricht von ${sender}. Warte auf brauchbare Nachricht`);
           }
         }
@@ -123,8 +121,6 @@ export class With_Appointment_Workflow extends Workflow{
             if(message.type == 'ERROR_PHONE_NOT_REMOVED'){
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Reset Timeout`);
                     this._timeout = 0;
-
-                    // this._currentStep = (this._WorkflowSteps as Workflow_Step[])[4];
             }
         });
     }
@@ -138,9 +134,6 @@ export class With_Appointment_Workflow extends Workflow{
         }
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
         await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Phone_Back(),this);
-        // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Next Step: ${(this._WorkflowSteps as Workflow_Step[])[5].getName()}`);
-        // this._currentStep = (this._WorkflowSteps as Workflow_Step[])[5];
-        // this._currentStep.execute('','');
         this.next();
     }
 

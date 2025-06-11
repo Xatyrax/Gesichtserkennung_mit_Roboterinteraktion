@@ -24,7 +24,7 @@ export function sendToClient(id:string, data:string):void {
     }
 }
 
-//"TCP" (fire and watch)
+//"TCP"
 export function sendToClientWithConfirmation(id:string, data:string):boolean {
 
     const client = clients.get(id);
@@ -49,5 +49,3 @@ export function getLastMessage(id:string):string {
     clients_lastmessage.set(id,fixedValues.NotUsedVariableString);
     return ret;
 }
-
-// export default {clients, clients_lastmessage};

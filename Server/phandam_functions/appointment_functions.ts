@@ -7,18 +7,14 @@ export async function getNextAppointment():Promise<Date>{
     return new Promise(async (resolve, reject) => {
 
         ConsoleLogger.logDebug(`Terminauswahl gestartet`);
-        // let now:Date = new Date();
         let AppoinmentStartPointer:Date = new Date();
 
         //Tage
         while(true) {
-            // let AppoinmentStartPointer:Date = new Date();
             let currentPointer:Date = new Date(AppoinmentStartPointer.getFullYear(),AppoinmentStartPointer.getMonth(),AppoinmentStartPointer.getDate(),fixedValues.OeffnungszeitVon,0,0);
 
             //Termine an dem Tag
             while (true){
-                // ConsoleLogger.logDebug(`Api H: ${AppoinmentStartPointer.getHours()}`);
-                // ConsoleLogger.logDebug(`${fixedValues.OeffnungszeitBis}`);
                 if(AppoinmentStartPointer.getHours() >= fixedValues.OeffnungszeitBis){break;ConsoleLogger.logDebug(`Alle Termine vergeben an dem Tag welchsele zum nächsten Tag`);}
 
                 while (currentPointer < AppoinmentStartPointer)

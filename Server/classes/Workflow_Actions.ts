@@ -1,7 +1,6 @@
 import {ConsoleLogger} from './ConsoleLogger';
 import {Workflow} from './Workflow';
 import {Workflow_Queue} from './Workflow_Queue';
-// import {Workflow_Actions} from './Workflow_Actions';
 import {Type_Validations} from './Type_Validations';
 import {sleep} from '../phandam_modules/timing_utils';
 import {sendToClientWithConfirmation} from '../api/websocket_modules';
@@ -65,13 +64,9 @@ export class Workflow_Actions{
         else if(WfsDieAufSolcheNachrichtWarten.length == 1)
         {
             WfsDieAufSolcheNachrichtWarten[0].getcurrentStep().execute(sender,message);
-            //TODO:Gib die Nachricht dem Workflow
         }
         else
         {
-
-            // let wf = new Workflow(0);
-                // wf.start();
                 try{
                     if(await Workflow_Starter.tryStart() == false) //Im True Case sind keine weiteren Aktionen nötig
                     {

@@ -2,13 +2,8 @@ import {ConsoleLogger} from './ConsoleLogger';
 import {Type_Validations} from '../classes/Type_Validations';
 import fixedValues from '../phandam_modules/config';
 import { sql_execute, sql_execute_write } from '../phandam_modules/db_utils';
-// import {sleep} from '../phandam_modules/timing_utils';
-// import { getNextAppointment } from '../phandam_functions/appointment_functions';
 import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform} from '../phandam_modules/date_time_utils';
-// import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform } from '../phandam_modules/date_time_utils';
-// import { convertDateToUString,convertDateToSmartphoneDate,convertDateToSmartphoneTime,convertDateToWeekdayShortform } from '../phandam_modules/date_time_utils';
 import { getNextAppointment } from '../phandam_functions/appointment_functions';
-// import { GetAllRooms,GetRoomByID,SetRoomStatus } from '../phandam_functions/room_functions';
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
 import {Workflow_Actions} from './Workflow_Actions';
@@ -127,42 +122,19 @@ export class Unknown_Customer_Workflow extends Workflow{
                         await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Failure(this._personDataError),this);
                         ConsoleLogger.logWarning(`${this.constructor.name} ${this._id}: Patientendaten Fehlerhaft: ${this._personDataError}. Warte auf neue Patientendaten`);
                         this._currentStep = (this._WorkflowSteps as Workflow_Step[])[2];
-                        // console.log(this._currentStep);
-                        // ConsoleLogger.logError(`${this.constructor.name} ${this._id}: Patientendaten Fehlerhaft: ${this._personDataError}. Beende Workflow`);
-                        // Workflow_Actions.ShutdownWorkflow(this._id);
                         return;
                     }
 
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patientendaten angenommen. Patient wird gespeichert.`);
                     await Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(),this);
                     await sleep(3);
-                    // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Senden an Smartphone.`);
                     await this.sendNextAppointment();
-
-                    // let nextAppointment:Date = await getNextAppointment();
-                    // // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: ${nextAppointment}`);
-                    // let date:string = convertDateToSmartphoneDate(nextAppointment);
-                    // let time:string = convertDateToSmartphoneTime(nextAppointment);
-                    // let weekday:string = convertDateToWeekdayShortform(nextAppointment);
-
-                    // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: ${nextAppointment}`);
-                    // await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday),this);
 
                     this.next();
                 }
                 else if(message.Answer == 'FALSE')
                 {
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patientendaten abgelehnt. Warte auf neue Patienendaten...`);
-                    //TODO: Sind fehlerhafte Workflow Steps möglich?
-                    // if(Type_Validations.isUndefined(this._WorkflowSteps) == true){
-                    //     ConsoleLogger.logError(`${this.constructor.name} ${this._id} Fehlerhafter Workflow. Beende Workflow`);
-                    //     //TODO: Shutdown
-                    // }
-                    // if((this._WorkflowSteps as Workflow_Step[]).length < 1)
-                    // {
-                    //     ConsoleLogger.logError(`${this.constructor.name} ${this._id} Fehlerhafter Workflow. Beende Workflow`);
-                    //     //TODO: Shutdown
-                    // }
                     let wfsWaitPerData:Workflow_Step = (this._WorkflowSteps as Workflow_Step[])[1] as Workflow_Step;
                     this._currentStep = wfsWaitPerData;
                     this.next();
@@ -211,16 +183,13 @@ export class Unknown_Customer_Workflow extends Workflow{
     }
 
      private async sendNextAppointment():Promise<void> {
-         // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Next Appointment.`);
          let nextAppointment:Date = await getNextAppointment();
-         // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: ${nextAppointment}`);
          let date:string = convertDateToSmartphoneDate(nextAppointment);
          let time:string = convertDateToSmartphoneTime(nextAppointment);
          let weekday:string = convertDateToWeekdayShortform(nextAppointment);
 
          this._nextAppointment = nextAppointment;
 
-         // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: ${nextAppointment}`);
          await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday),this);
      }
 }

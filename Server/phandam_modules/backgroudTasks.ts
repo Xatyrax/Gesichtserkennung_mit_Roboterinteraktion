@@ -5,8 +5,6 @@ import { convertDateToUString } from './date_time_utils';
 
 export async function StartBackgroudActions(){
     while(true){
-        //TODO: Tasks
-
         let newDate = new Date();
         newDate.setMinutes(newDate.getMinutes() - fixedValues.MaximaleVerspaetungsDauerInMinuten);
         newDate.setSeconds(0);

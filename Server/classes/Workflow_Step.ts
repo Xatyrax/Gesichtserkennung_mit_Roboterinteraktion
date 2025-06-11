@@ -1,6 +1,5 @@
 export class Workflow_Step{
     private _name:string = 'test';
-    // next:Workflow_Step = new Workflow_Step();
 
     private _expectedSender:string|null;
     private _expectedMessageType:string|null;

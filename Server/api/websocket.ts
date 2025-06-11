@@ -1,29 +1,14 @@
 import {WebSocketServer} from 'ws';
 import {ConsoleLogger} from '../classes/ConsoleLogger';
 import {Type_Validations} from '../classes/Type_Validations';
-// import { Server } from 'http';
 import fixedValues from '../phandam_modules/config';
 import {smartphone_wscom} from './websocket_client_actions';
 import {clients,clients_lastmessage,sendToClient, getLastMessage } from './websocket_modules';
-// import {Workflow} from '../classes/Workflow';
-import {With_Appointment_Workflow} from '../classes/With_Appointment_Workflow';
-import {Without_Appointment_Workflow} from '../classes/Without_Appointment_Workflow';
 import {Workflow_Queue} from '../classes/Workflow_Queue';
-// import {Workflow_Communication} from '../classes/Workflow_Communication';
 import {Workflow_Actions} from '../classes/Workflow_Actions';
-// import {DriveToPickUpPatient} from '../api/websocket_messages';
-// import {sendToClient} from './websocket_modules';
 
 
 export async function startWebsocketServer(){
-
-// ConsoleLogger.logDebug('Die folgenden Workflows wird nur aus Abhängigkeitsgründen benötigt und erfüllt keine funktionale Wirkung');
-// let wf:With_Appointment_Workflow = new With_Appointment_Workflow(1,'',''); //keine funktionale Wirkung, aber nötig da sonst Workflow erst nach dem Websocket importiert wird
-// Workflow_Queue.queue.push(wf);
-// Workflow_Queue.ShutdownWorkflow(wf.getid());
-// let wof:Without_Appointment_Workflow = new Without_Appointment_Workflow(1,'',''); //keine funktionale Wirkung, aber nötig da sonst Workflow erst nach dem Websocket importiert wird
-// Workflow_Queue.queue.push(wof);
-// Workflow_Queue.ShutdownWorkflow(wof.getid());
 
 const wss = new WebSocketServer({ port: 3001 });
 
@@ -36,10 +21,6 @@ wss.on('connection', (ws) => {
 
     //Trigger für den Eingang von Nachrichten
     ws.on('message', (message:string) => {
-
-        //Debug
-
-        //ws.send(`Echo: ${message}`);
 
         //Prüfen ob der Client sich als Smartphone identifiziert
         if(`${message}` == fixedValues.websocket_smartphoneID)
@@ -67,8 +48,6 @@ wss.on('connection', (ws) => {
             ws.send('Hallo Wall-E');
         }
 
-        //const websocket_object = Array.from(clients.entries())[1];
-
         const matchingKeys = [];
 
         for (const [key, value] of clients.entries()) {
@@ -80,35 +59,16 @@ wss.on('connection', (ws) => {
         if(matchingKeys[0]){
             if(matchingKeys[0] == fixedValues.websocket_smartphoneID){
                 recivedFormAuthenticatedClient(fixedValues.websocket_smartphoneID,message);
-                // console.log(`Received From ${fixedValues.websocket_smartphoneID}: ${message}`);
-                // if(smartphone_wscom.IsMessageInit(message) == true)
-                // {
-                //     smartphone_wscom.InitActions(message);
-                // }
-                // else
-                // {
-                //     clients_lastmessage.set(fixedValues.websocket_smartphoneID,message);
-                // }
             }
             else if(matchingKeys[0] == fixedValues.websocket_gesichtserkennungID){
                 recivedFormAuthenticatedClient(fixedValues.websocket_gesichtserkennungID,message);
-                // console.log(`Received From ${fixedValues.websocket_gesichtserkennungID}: ${message}`);
-                // clients_lastmessage.set(fixedValues.websocket_gesichtserkennungID,message);
             }
             else if(matchingKeys[0] == fixedValues.websocket_spracherkennungID){
                 recivedFormAuthenticatedClient(fixedValues.websocket_spracherkennungID,message);
-                // console.log(`Received From ${fixedValues.websocket_spracherkennungID}: ${message}`);
-                // clients_lastmessage.set(fixedValues.websocket_spracherkennungID,message);
             }
             else if(matchingKeys[0] == fixedValues.websocket_RoboterID){
                 recivedFormAuthenticatedClient(fixedValues.websocket_RoboterID,message);
-                // console.log(`Received From ${fixedValues.websocket_RoboterID}: ${message}`);
-                // clients_lastmessage.set(fixedValues.websocket_RoboterID,message);
             }
-            // else
-            // {
-            //     console.log(`Received From Unknown Client: ${message}`);
-            // }
         }
 
     });
@@ -163,5 +123,3 @@ function recivedFormAuthenticatedClient(id:string,message:string){
         Workflow_Actions.reciveMessage(id,JSON.parse(message));
     }
 }
-
-// export default wss;

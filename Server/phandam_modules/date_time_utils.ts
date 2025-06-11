@@ -1,8 +1,5 @@
-//UString = YYYY-MM-DDTHH:MM
-
 export function convertDateToUString(date:Date): string
 export function convertDateToUString(date:Date, WithTime:Boolean): string
-
 export function convertDateToUString(date:Date,WithTime?:Boolean): string {
     let boTime:Boolean = WithTime == undefined ? false : true;
     let Year = date.getFullYear();

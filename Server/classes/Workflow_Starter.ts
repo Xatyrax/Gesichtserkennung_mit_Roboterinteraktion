@@ -26,13 +26,6 @@ export class Workflow_Starter{
     public static async tryStart():Promise<boolean>{
         return new Promise(async (resolve, reject) => {
 
-            // console.log(start);
-        // return true;
-        //TODO: Ist der Patient bekannt und wenn ja hat er einen Termin? --> enstprechenden Workflow starten
-
-        // ConsoleLogger.logDebug(`starte Workflow mit ID ${wf.getid()}`);
-
-        //TODO: debug, welcher workflow nimmt die message, oder wird einer gestartet
         let Face_Exists_Response:any;
         try {Face_Exists_Response = await faceExists()}
         catch(error){ console.log(error); resolve(false); return; }
@@ -40,7 +33,6 @@ export class Workflow_Starter{
         //Patient nicht bekannt
         if(Face_Exists_Response.result == false){
             ConsoleLogger.logDebug(`Gesicht nicht bekannt. Neuer Patient wird angelegt`);
-            // Workflow_Communication.sendMessage(fixedValues.websocket_smartphoneID,SM_Face_UnknownPatient());
 
             try{
                     let wf = new Unknown_Customer_Workflow(0,fixedValues.websocket_gesichtserkennungID,Face_Exists_Response);
@@ -48,16 +40,12 @@ export class Workflow_Starter{
                 }catch(error){reject(error);return;}
 
             resolve(true);return;
-            //TODO:start Unknown Workflow
-            // PatientAnlegen();
         }
 
         //Patient bekannt
         if(Face_Exists_Response.result == true){
             ConsoleLogger.logDebug(`Das Gesicht ist bereits bekannt`);
 
-            //Ist der Filename eine Number? (für spätere Überprüfung ob es eine gültige ID in der DB ist)
-            //TODO: Was wenn keine BildID mitgeschickt wird
             if(Face_Exists_Response.filename === undefined)
             {
             ConsoleLogger.logDebug(`Gesichtserkennung hat keine Eigenschaft filename in der JSON Nachricht. Beende Workflow`);
@@ -77,13 +65,8 @@ export class Workflow_Starter{
             resolve(false);return;
             }
 
-            // ConsoleLogger.logDebug(`Workflow ${this._id}: ${Face_Exists_Response.filename}`);
-            // ConsoleLogger.logDebug(`Workflow ${this._id}: ${await HasAppointment(Face_Exists_Response.filename)}`);
-            // try{
             if(await HasAppointment(Face_Exists_Response.filename) == true)
             {
-                // ConsoleLogger.logDebug('With_Appointment_Workflow');
-
                 ConsoleLogger.logDebug(`Der Patient hat einen Termin`);
                 try{
                     let wf = new With_Appointment_Workflow(0,fixedValues.websocket_gesichtserkennungID,Face_Exists_Response);
@@ -102,11 +85,6 @@ export class Workflow_Starter{
 
                 resolve(true);return;
             }
-            // }
-            // catch
-            // {}
-            // }
-
         }
         return true;
     });

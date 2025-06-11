@@ -33,10 +33,8 @@ export async function SetRoomStatus(roomID:number,Free:Boolean){
         let PatientenID:any = await sql_execute(`SELECT PatientID FROM Patients_Rooms as PR Join Rooms as R WHERE R.RoomKey = 'W';`);
         if(PatientenID.length > 0)
         {
-            Workflow_Starter.tryStartPickFromWatingroom();
-            // return; //Damit der Raum nicht freigegeben wird
+            Workflow_Starter.tryStartPickFromWatingroom(); //Kein Return, damit die Methode async weiterläuft und der User den Raum als frei sieht
         }
-        // PatientFromWatingroom();
     }
     else
     {sqlcommand = "Update Rooms set Free = 0 WHERE RoomID = ?";}
@@ -47,7 +45,6 @@ export async function SetRoomStatus(roomID:number,Free:Boolean){
 }
 
 async function PatientFromWatingroom(){
-// return new Promise(async (resolve, reject) => {
     let PatientenID:any = await sql_execute(`SELECT PatientID FROM Patients_Rooms as PR Join Rooms as R WHERE R.RoomKey = 'W';`);
 
     if(PatientenID.length <= 0) {return;}
@@ -56,13 +53,9 @@ async function PatientFromWatingroom(){
     if(PatientHolenErfolgreich == false)
     {
         console.log('Patient konnte nicht aus Wartezimmer geholt werden');
-        //TODO: Zum Vermeiden von Datenbankleichen kein Return. Evtl. Wiederholen?
     }
 
     let sqlcommand:string = 'DELETE FROM Patients_Rooms WHERE PatientID = ?';
     let data = [PatientenID[0].PatientenID];
     await sql_execute_write(sqlcommand,data);
-
-    // resolve(true);
-// });
 }

@@ -8,27 +8,17 @@ import { sql_execute, sql_execute_write } from './phandam_modules/db_utils';
 import { convertDateToUString } from './phandam_modules/date_time_utils';
 import { sleep } from './phandam_modules/timing_utils';
 import fixedValues from './phandam_modules/config';
-import {voiceFileUploaded, faceFileUploaded} from './api/websocket_client_actions';
-// import {voiceFileUploaded, faceFileUploaded, audioFileDownload} from './api/websocket_client_actions';
-
 import {sendToClient, getLastMessage } from './api/websocket_modules';
 import {StartBackgroudActions} from './phandam_modules/backgroudTasks';
 import {SM_Audio_GenerationFailure} from './api/websocket_messages';
 import { validateUserInputs } from './phandam_functions/client_errorhandling';
 import { GetAllRooms,GetRoomByID,SetRoomStatus } from './phandam_functions/room_functions';
-// import {Workflow} from './classes/Workflow';
-// import {With_Appointment_Workflow} from './classes/With_Appointment_Workflow';
-// import {Workflow_Queue} from './classes/Workflow_Queue';
 import {startWebsocketServer} from './api/websocket';
-// import {With_Appointment_Workflow} from './classes/With_Appointment_Workflow';
-//
-// let wf = new With_Appointment_Workflow(0);
 
 
 
 const app = express();
 const PORT = 3000;
-//TODO: In config? auslagern???
 const storage_gesicht = multer.diskStorage({
   destination: function (
     req: Request,
@@ -99,19 +89,17 @@ app.get('/rooms', (req: Request, res: Response) => {
 })
 
 /**********
-*   API   * //TODO:In API auslagern
+*   API   *
 ***********/
 
 app.post('/upload/sprache', upload_sprache.single('myfile'), async (req: Request, res: Response) => {
   res.send('angekommen');
   console.log(req.file);
-  voiceFileUploaded();
 });
 
 app.post('/upload/gesicht', upload_gesicht.single('myfile'), async (req: Request, res: Response) => {
   res.send('angekommen');
   console.log(req.file);
-  faceFileUploaded();
 });
 
 app.get("/download/sprache", async (req: Request, res: Response) => {
@@ -146,7 +134,6 @@ app.get("/download/sprache", async (req: Request, res: Response) => {
 app.get("/api/calendar", async (req: Request, res: Response) => {
 
   let termine;
-  //TODO: Zu negativabfrage umwandeln
   if(req.session.weekdate)
   {}
   else
@@ -155,13 +142,12 @@ app.get("/api/calendar", async (req: Request, res: Response) => {
   }
 
   try{
-    //TODO: Where Woche = heutige
-  termine = await sql_execute('Select A.AppointmentID, A.Start, A.End, P.Firstname, P.Lastname From Appointments AS A JOIN Patients AS P ON A.PatientID = P.PatientID');
+    termine = await sql_execute('Select A.AppointmentID, A.Start, A.End, P.Firstname, P.Lastname From Appointments AS A JOIN Patients AS P ON A.PatientID = P.PatientID');
 
-  res.json({dateOfTheWeek: req.session.weekdate, OeffnungszeitVon: fixedValues.OeffnungszeitVon,
-    OeffnungszeitBis: fixedValues.OeffnungszeitBis,
-    Termine: JSON.stringify(termine)
-  });
+    res.json({dateOfTheWeek: req.session.weekdate, OeffnungszeitVon: fixedValues.OeffnungszeitVon,
+      OeffnungszeitBis: fixedValues.OeffnungszeitBis,
+      Termine: JSON.stringify(termine)
+    });
 
   }catch{
     res.json({ OeffnungszeitVon: fixedValues.OeffnungszeitVon, OeffnungszeitBis: fixedValues.OeffnungszeitBis});
@@ -192,10 +178,8 @@ app.post("/api/calendar", async (req: Request, res: Response) => {
 
 
 app.get("/api/event", async (req: Request, res: Response) => {
-
-  //TODO: leere ID abfangen
   let eventid = req.session.eventid;
-  let termindaten = JSON.parse('{}'); //Um Typescript zu zeigen, dass es um ein JSON Object und nicht um einen String geht
+  let termindaten:any;
   termindaten = await sql_execute(`Select A.Start, A.End, P.Sex, P.Firstname, P.Lastname, P.Birthday, P.Phone,P.Mail From Appointments AS A JOIN Patients AS P ON A.PatientID = P.PatientID Where A.AppointmentID = ${eventid}`);
 
   res.json({error:'FALSE',date: convertDateToUString(termindaten[0].Start), start: termindaten[0].Start,  ende: termindaten[0].End,  geschlecht: termindaten[0].Sex,  vorname: termindaten[0].Firstname,  nachname: termindaten[0].Lastname,  geburtstag: convertDateToUString(termindaten[0].Birthday),  telefon: termindaten[0].Phone,  mail: termindaten[0].Mail});
@@ -207,7 +191,6 @@ app.post("/api/event", async (req: Request, res: Response) => {
 
   if(req.body.delete == 'true')
   {
-    //TODO: letztes Patientenvorkommen? --> Patienten werden nicht gelöscht?
     if(eventid)
     {
         let data = [eventid];
@@ -218,8 +201,6 @@ app.post("/api/event", async (req: Request, res: Response) => {
     res.redirect("/");
     return;
   }
-  //Date
-  //TODO:Datentypen
 
   let date = req.body.date;
   let starttime = req.body.starttime;
@@ -236,7 +217,6 @@ app.post("/api/event", async (req: Request, res: Response) => {
 
   let InputErrorMessage = validateUserInputs(startdatetime,enddatetime,sex,firstname,lastname,birthday?birthday:new Date(),phone,mail);
 
-  //TODO: Conversion Function?
   let birthdayString = String(birthday) == 'Invalid Date'?'':convertDateToUString(birthday);
   if(birthdayString=='')
   {
@@ -246,8 +226,6 @@ app.post("/api/event", async (req: Request, res: Response) => {
 
   if(InputErrorMessage != null)
   {
-    // console.log(date);
-    // console.log(req.session.date);
     req.session.userInputError = JSON.parse(`{"message":"${InputErrorMessage}","InputedData":{"eventid":"${eventid?eventid:''}","date":"${date}",  "starttime":"${starttime}", "endtime":"${endtime}", "sex":"${sex?sex:''}","firstname":"${firstname}","lastname":"${lastname}","birthday":"${birthdayString}","phone":"${phone?phone:''}","mail":"${mail?mail:''}"}}`);
     res.redirect("/termin");
     return;
@@ -329,13 +307,9 @@ app.get("/api/client", (req: Request, res: Response) => {
 
 app.post("/api/client", (req: Request, res: Response) => {
 
-  //res.redirect("/termin");
-  //TODO: In Session Definition zu Nummber machen
   let eventid = req.body.id;
   let date = req.body.date;
   let time = req.body.time;
-  // console.log(time);
-  // console.log(date);
   if(eventid)
   {
       req.session.eventid = eventid;
@@ -347,13 +321,11 @@ app.post("/api/client", (req: Request, res: Response) => {
 
     if(time.split(':')[0].length == 1)
       time = '0'+time;
-    //TODO: Datum und Uhrzeit in ein Datetime
     var datetimestring = "1970-01-01T" + time.padStart(2, "0") +":00";
     var datetime = new Date(datetimestring);
     if (date) {
           req.session.date = date;
       } else {
-        //TODO konstante felder in Datei
           req.session.date = fixedValues.NotUsedVariableString;
       }
 
@@ -393,8 +365,3 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 startWebsocketServer();
-
-
-
-// wss.start();
-// console.log('Websocket running on ws://localhost:3001');

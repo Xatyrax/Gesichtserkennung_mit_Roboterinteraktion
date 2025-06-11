@@ -1,5 +1,3 @@
-// import express,{ Request, Response } from 'express';
-// import session from 'express-session';
 import fixedValues from '../phandam_modules/config';
 
 export function validateUserInputs(starttime:Date,endtime:Date,sex:string|null,firstname:string, lastname:string, birthday:Date, phone:string|null,mail:string|null):string|null{
@@ -43,6 +41,4 @@ export function validateUserInputs(starttime:Date,endtime:Date,sex:string|null,f
     {return "Der Geburtstag darf nicht nach dem heutigen Tag liegen";}
 
     return null;
-    //TODO: Andere Fehlerprüfungen. Regex?
-
 }
