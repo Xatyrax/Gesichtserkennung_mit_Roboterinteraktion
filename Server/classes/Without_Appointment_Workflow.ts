@@ -108,6 +108,7 @@ export class Without_Appointment_Workflow extends Workflow{
                     let weekday:string = convertDateToWeekdayShortform(nextAppointment);
                     this._nextAppointment = nextAppointment;
 
+                    await sleep(5);
                     await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_NextAppointment_Response(date,time,weekday));
 
                     this._currentStep = (this._WorkflowSteps as Workflow_Step[])[2];

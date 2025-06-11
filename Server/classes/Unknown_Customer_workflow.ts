@@ -198,6 +198,7 @@ export class Unknown_Customer_Workflow extends Workflow{
                 }
                 else if (message.message.text.result == 'NO')
                 {
+                    await sleep(5);
                      await this.sendNextAppointment();
                 }
                 else
