@@ -13,6 +13,7 @@ import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
 import {Workflow_Actions} from './Workflow_Actions';
 import {SM_Face_UnknownPatient,SM_Persondata,GE_New_Patient,SM_Failure,SM_Extract_From_Audio_Yes,SM_NextAppointment_Response} from '../api/websocket_messages';
+import {sleep} from '../phandam_modules/timing_utils';
 
 
 
@@ -134,7 +135,7 @@ export class Unknown_Customer_Workflow extends Workflow{
 
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patientendaten angenommen. Patient wird gespeichert.`);
                     await Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(),this);
-
+                    await sleep(3);
                     // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Senden an Smartphone.`);
                     await this.sendNextAppointment();
 

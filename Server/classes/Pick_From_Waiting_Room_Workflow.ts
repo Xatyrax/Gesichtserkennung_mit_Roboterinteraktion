@@ -9,6 +9,7 @@ import {sleep} from '../phandam_modules/timing_utils';
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
 import {Workflow_Actions} from './Workflow_Actions';
+import {Workflow_Starter} from './Workflow_Starter';
 import {SM_ReachedGoal,SP_Audio_Genaration_Request,DriveToTarget,SM_Audio_GenerationSuccess,DriveToPickUpPatient,SM_Phone_Back} from '../api/websocket_messages';
 
 
@@ -47,9 +48,10 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         let wfsStart:Workflow_Step = new Workflow_Step('StartActionsPickPatient',null,null);
         let wfsWaitUntilWaitingroom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInWatingroom',fixedValues.websocket_RoboterID,'PICK_PATIENT_ANSWER');
         let wfsWaitForSpeech:Workflow_Step = new Workflow_Step('WatingForSpeechResponse','','');
-        // let wfsWaitForResTimeout:Workflow_Step = new Workflow_Step('watingForResetTimeout',fixedValues.websocket_RoboterID,'ERROR_PHONE_NOT_REMOVED');
+
         // let wfsPhoneRemovedAction:Workflow_Step = new Workflow_Step('PhoneRemovedAction','','');
         let wfsWaitUntilTreRoom:Workflow_Step = new Workflow_Step('WatingForRobotArivalInRoom',fixedValues.websocket_RoboterID,'DRIVE_TO_ROOM_ANSWER');
+        let wfsWaitForResTimeout:Workflow_Step = new Workflow_Step('watingForResetTimeout',fixedValues.websocket_RoboterID,'ERROR_PHONE_NOT_REMOVED');
 
         //Stepeigenschaften
         wfsStart.execute = this.takeStartupActions.bind(this);
@@ -58,17 +60,20 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
         steps.push(wfsWaitUntilWaitingroom);
         wfsWaitForSpeech.execute = this.watingForSpeechResponse.bind(this);
         steps.push(wfsWaitForSpeech);
-        // wfsWaitForResTimeout.execute = this.watingForResetTimeout.bind(this);
-        // steps.push(wfsWaitForResTimeout);
+
         // wfsPhoneRemovedAction.execute = this.PhoneRemoved.bind(this);
         // steps.push(wfsPhoneRemovedAction);
         wfsWaitUntilTreRoom.execute = this.watingForRobotArivalInRoom.bind(this);
         steps.push(wfsWaitUntilTreRoom);
+        wfsWaitForResTimeout.execute = this.watingForResetTimeout.bind(this);
+        steps.push(wfsWaitForResTimeout);
+
 
         //Reihnfolge
         wfsStart.nextStep = wfsWaitUntilWaitingroom;
         wfsWaitUntilWaitingroom.nextStep = wfsWaitForSpeech;
-        wfsWaitForSpeech.nextStep = wfsWaitUntilTreRoom;
+        // wfsWaitForSpeech.nextStep = wfsWaitUntilTreRoom;
+        // wfsWaitUntilTreRoom.nextStep = wfsWaitForResTimeout;
         // wfsWaitForSpeech.nextStep = wfsWaitForResTimeout;
         // wfsWaitForResTimeout.nextStep = wfsPhoneRemovedAction;
         // wfsPhoneRemovedAction.nextStep = wfsWaitUntilTreRoom;
@@ -139,10 +144,35 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                 await sleep(10);
                 await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Audio_GenerationSuccess(),this);
 
+                // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Raumauswahl gestartet`);
+                // let Raeume = await GetAllRooms();
+                // if(Raeume[1].Free == true)
+                // {
+                //     Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B1'));
+                //     await SetRoomStatus(Raeume[1].RoomID,false);
+                // }
+                // else if(Raeume[2].Free == true)
+                // {
+                //     Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B2'));
+                //     await SetRoomStatus(Raeume[2].RoomID,false);
+                // }
+                // else if(Raeume[3].Free == true)
+                // {
+                //     Workflow_Actions.sendMessage(fixedValues.websocket_RoboterID,DriveToTarget('B3'));
+                //     await SetRoomStatus(Raeume[3].RoomID,false);
+                // }
+                // else{
+                //     ConsoleLogger.logError(`${this.constructor.name} ${this._id}: kein freier Raum gefunden`);
+                // }
+                Workflow_Starter.StartWithAppointment(this._patientenID)
+                // let Fake_Face_response = `{"event": "face_result", "filename": "${this._patientenID}", "result": "Gesicht erkannt"}`
+                // let wf = new With_Appointment_Workflow(0,fixedValues.websocket_gesichtserkennungID,Fake_Face_response);
+                // Workflow_Queue.queue.push(wf);
+
                 ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout Rücksetzung starten`);
                 this.next();
-                ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout starten`);
-                this.waitForTimeout();
+                // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout starten`);
+                // this.waitForTimeout();
 
 
         });
@@ -154,7 +184,7 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Reset Timeout`);
                     this._timeout = 0;
                     // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Reset Step: ${(this._WorkflowSteps as Workflow_Step[])[4].getName()}`)
-                    this._currentStep = (this._WorkflowSteps as Workflow_Step[])[4];
+                    this._currentStep = (this._WorkflowSteps as Workflow_Step[])[5];
                     // this.next();
             }
         });
@@ -203,8 +233,15 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
                     let sqlcommand:string = "Delete From Patients_Rooms Where PatientID = ?";
                     let data = [this._patientenID];
                     await sql_execute_write(sqlcommand,data);
+
+                    this.waitForTimeout();
+
+                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout Rücksetzung starten`);
                     this.next();
+                    ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout starten`);
+                    this.waitForTimeout();
                 }
+                //TODO: Else
             }
         });
     }
@@ -212,11 +249,14 @@ export class Pick_From_Waiting_Room_Workflow extends Workflow{
     private async waitForTimeout():Promise<void>{
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout gestartet`);
         while(this._timeout < 13){
-            // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout tick: Timeout ${String(this._timeout)}`);
+            ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout tick: Timeout ${String(this._timeout)}`);
             this._timeout = this._timeout + 1;
             await sleep();
         }
         ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Timeout abgelaufen`);
+        await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Phone_Back(),this);
+        this.next();
+
         // ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Next Step: ${(this._WorkflowSteps as Workflow_Step[])[5].getName()}`);
         this._currentStep = (this._WorkflowSteps as Workflow_Step[])[5];
         this._currentStep.execute('','');

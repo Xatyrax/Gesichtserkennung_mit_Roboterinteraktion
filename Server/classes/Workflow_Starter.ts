@@ -111,4 +111,12 @@ export class Workflow_Starter{
         return true;
     });
     }
+
+    public static async StartWithAppointment(patientenID:number):Promise<void>{
+        return new Promise(async (resolve, reject) => {
+            let Fake_Face_response = `{"event": "face_result", "filename": "${patientenID}", "result": "Gesicht erkannt"}`
+            let wf = new With_Appointment_Workflow(0,fixedValues.websocket_gesichtserkennungID,Fake_Face_response);
+            Workflow_Queue.queue.push(wf);
+        });
+    }
 }
