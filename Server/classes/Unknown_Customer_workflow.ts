@@ -7,7 +7,7 @@ import { getNextAppointment } from '../phandam_functions/appointment_functions';
 import {Workflow_Step} from './Workflow_Step';
 import {Workflow} from './Workflow';
 import {Workflow_Actions} from './Workflow_Actions';
-import {SM_Face_UnknownPatient,SM_Persondata,GE_New_Patient,SM_Failure,SM_Extract_From_Audio_Yes,SM_NextAppointment_Response} from '../api/websocket_messages';
+import {SM_Face_UnknownPatient,SM_Persondata,GE_New_Patient,SM_Failure,SM_Extract_From_Audio_Yes,SM_Extract_From_Audio_No,SM_NextAppointment_Response} from '../api/websocket_messages';
 import {sleep} from '../phandam_modules/timing_utils';
 
 
