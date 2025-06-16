@@ -170,8 +170,9 @@ export class Unknown_Customer_Workflow extends Workflow{
                 }
                 else if (message.message.text.result == 'NO')
                 {
+                    Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,SM_Extract_From_Audio_No(),this);
                     await sleep(7);
-                     await this.sendNextAppointment();
+                    await this.sendNextAppointment();
                 }
                 else
                 {
