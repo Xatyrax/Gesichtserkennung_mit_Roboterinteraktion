@@ -100,6 +100,8 @@ export class Unknown_Customer_Workflow extends Workflow{
             {this._personDataError = "Fistname Fehler"}
             else if(message.message.text.lastname == "" || message.message.text.lastname == "-")
             {this._personDataError = "Lastname Fehler"}
+            else if(Type_Validations.isUndefined(message.message.text.date_of_birth))
+            {this._personDataError = "Geb Fehler"}
             else if(message.message.text.date_of_birth == "" || message.message.text.date_of_birth == "-")
             {this._personDataError = "Geb Fehler"}
             else
