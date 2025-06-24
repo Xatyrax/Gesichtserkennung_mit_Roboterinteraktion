@@ -121,11 +121,11 @@ const db = require('./phandam_modules/dbConnect.js');
 
 
     let personData = [
-            ['1','M','Max', 'Mustermann', '1990-02-01T00:00','123 456','mail@mail.com'],
-            // ['2','M','Isaac', 'Asimov', '1999-10-18T00:00','123 456','isaac@mail.com'],
+            ['1','M','Philipp', 'Hagel', '1999-07-15T00:00','123 4567','123@123.com'],
+            ['2','W','Melissa', 'Storf', '1997-06-19T00:00','123456789','mail@mail.com']
             // ['3','M','Christopher', 'Paolini', '2001-11-21T00:00','123 456','mail@paolini.com'],
-            ['2','W','Ulrike', 'Mayer', '1968-06-13T00:00','0831 563450','UlrikeMayer@gmail.com'],
-            ['3','M','Sebastian', 'Fitzek', '2000-12-30T00:00','0176 234890345','SebastianFitzek@gmail.com']
+            // ['2','W','Ulrike', 'Mayer', '1968-06-13T00:00','0831 563450','UlrikeMayer@gmail.com'],
+            // ['3','M','Sebastian', 'Fitzek', '2000-12-30T00:00','0176 234890345','SebastianFitzek@gmail.com']
             // ['Alexey', 'Pehov', '1963-09-30T00:00']
         ];
 
@@ -141,10 +141,9 @@ const db = require('./phandam_modules/dbConnect.js');
         });
 
         let termineData = [
-            // ['2025-05-30T09:00', '2025-05-30T09:30', '3'],
-            ['2025-06-12T08:00', '2025-06-12T09:00', '1'],
-            ['2025-06-14T10:00', '2025-06-14T11:00', '2'],
-            ['2025-06-15T09:00', '2025-06-15T10:00', '3']
+            ['2025-06-24T016:00', '2025-06-24T017:00', '1'],
+            ['2025-06-24T10:00', '2025-06-24T11:00', '2']
+            // ['2025-06-15T09:00', '2025-06-15T10:00', '3']
             // ['2025-04-24T09:00', '2025-04-24T09:30', '4']
         ];
 

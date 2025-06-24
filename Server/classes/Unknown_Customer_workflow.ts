@@ -17,6 +17,7 @@ export class Unknown_Customer_Workflow extends Workflow{
     private _patientenID:number;
     private _nextAppointment:Date;
     private _personDataError:string;
+    private _personData:any;
 
     constructor(timeoutTimer:number,sender:string,message:any)
     {
@@ -107,6 +108,8 @@ export class Unknown_Customer_Workflow extends Workflow{
             else
             {this._personDataError = ""}
 
+            this._personData = message;
+
             let ResponseForSmartphone = SM_Persondata(vorname,nachname,geschlecht??'-',convertDateToSmartphoneDate(gebrutsdatum),tel??'-',email??'-');
             await Workflow_Actions.sendMessage(fixedValues.websocket_smartphoneID,ResponseForSmartphone,this);
 
@@ -128,6 +131,25 @@ export class Unknown_Customer_Workflow extends Workflow{
                     }
 
                     ConsoleLogger.logDebug(`${this.constructor.name} ${this._id}: Patientendaten angenommen. Patient wird gespeichert.`);
+
+
+                    let geschlecht:string|null = this._personData.message.text.sex;
+                    let vorname:string = this._personData.message.text.firstname;
+                    let nachname:string = this._personData.message.text.lastname;
+                    //TODO:Fehlererkennung
+                    let gebYear=(this._personData.message.text.date_of_birth).substring(0,4);
+                    let gebMonth=(this._personData.message.text.date_of_birth).substring(5,7);
+                    let gebDay=(this._personData.message.text.date_of_birth).substring(8,10);
+                    let gebDate = new Date(gebYear,gebMonth-1,gebDay,12,0,0);
+                    let gebrutsdatum:Date = gebDate;
+                    let tel:string|null = this._personData.message.text.phone_number;
+                    let email:string|null = this._personData.message.text.email_address;
+
+                    //new
+                    let sql_command = `INSERT INTO Patients (PatientID, Sex,Firstname, Lastname, Birthday,Phone,Mail) VALUES (?,?,?,?,?,?,?)`;
+                    let sql_data = [3,geschlecht??null,vorname,nachname,gebrutsdatum,tel??null,email??null];
+                    sql_execute_write(sql_command,sql_data);
+
                     await Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(),this);
                     await sleep(3);
                     await this.sendNextAppointment();
