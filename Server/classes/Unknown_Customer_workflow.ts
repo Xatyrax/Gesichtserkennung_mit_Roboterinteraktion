@@ -147,7 +147,7 @@ export class Unknown_Customer_Workflow extends Workflow{
 
                     //new
                     let sql_command = `INSERT INTO Patients (PatientID, Sex,Firstname, Lastname, Birthday,Phone,Mail) VALUES (?,?,?,?,?,?,?)`;
-                    let sql_data = [3,geschlecht??null,vorname,nachname,gebrutsdatum,tel??null,email??null];
+                    let sql_data = [this._patientenID,geschlecht??null,vorname,nachname,gebrutsdatum,tel??null,email??null];
                     sql_execute_write(sql_command,sql_data);
 
                     await Workflow_Actions.sendMessage(fixedValues.websocket_gesichtserkennungID,GE_New_Patient(),this);
